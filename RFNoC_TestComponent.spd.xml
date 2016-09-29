@@ -21,6 +21,6 @@
     <programminglanguage name="C++"/>
     <humanlanguage name="EN"/>
     <os name="Linux"/>
-    <processor name="RF-NoC"/>
+    <processor name="RF-NoC-Default"/>
   </implementation>
 </softpkg>
