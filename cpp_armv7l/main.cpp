@@ -23,7 +23,8 @@ int main(int argc, char* argv[])
     sa.sa_flags = 0;
     resourcePtr = 0;
 
-    Component::start_component(resourcePtr, argc, argv);
+    //Component::start_component(&resourcePtr, argc, argv);
+    Resource_impl::start_component(resourcePtr, argc, argv);
     return 0;
 }
 
@@ -35,7 +36,7 @@ extern "C" {
         sa.sa_flags = 0;
         resourcePtr = 0;
 
-        Component::start_component(resourcePtr, argc, argv);
+        Resource_impl::start_component(resourcePtr, argc, argv);
 
         // Any addition parameters passed into construct can now be
         // set directly onto resourcePtr since it is the instantiated
@@ -44,7 +45,16 @@ extern "C" {
         //         resourcePtr->setSharedAPI(sharedAPI);
         //resourcePtr->setParentDevice(parentDevice);
         std::cout << "A" << std::endl;
+
+        if (resourcePtr) {
+            std::cout << "Resource Ptr is valid, supposedly" << std::endl;
+        } else {
+            std::cout << "Resource Ptr is invalid" << std::endl;
+            return NULL;
+        }
+
         resourcePtr->setUsrp(usrp);
+
         std::cout << "B" << std::endl;
 
         return resourcePtr;
