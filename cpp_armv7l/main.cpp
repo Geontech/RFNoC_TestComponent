@@ -55,7 +55,8 @@ extern "C" {
 
         std::cout << resourcePtr->_identifier << std::endl;
 
-        resourcePtr->setUsrp(usrp);
+        //resourcePtr->setUsrp(usrp);
+        std::cout << usrp->get_mboard_name() << std::endl;
 
         std::cout << "B" << std::endl;
 
