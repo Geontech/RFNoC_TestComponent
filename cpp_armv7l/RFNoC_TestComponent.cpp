@@ -37,16 +37,14 @@ void RFNoC_TestComponent_i::constructor()
     }
 
     this->message_in->registerMessage("RFNoC_Struct", this, &RFNoC_TestComponent_i::receivedRFNoC_Struct);
-
-    RFNoC_Struct_struct out;
-    out.upstreamBlockID = this->blockID;
-
-    this->message_out->sendMessage(out);
 }
 
 void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::SystemException)
 {
+    RFNoC_Struct_struct out;
+    out.upstreamBlockID = this->blockID;
 
+    this->message_out->sendMessage(out);
 }
 
 /***********************************************************************************************
