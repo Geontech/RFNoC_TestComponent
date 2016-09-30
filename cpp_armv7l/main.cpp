@@ -44,21 +44,7 @@ extern "C" {
         //      Example:
         //         resourcePtr->setSharedAPI(sharedAPI);
         //resourcePtr->setParentDevice(parentDevice);
-        std::cout << "A" << std::endl;
-
-        if (resourcePtr) {
-            std::cout << "Resource Ptr is valid, supposedly" << std::endl;
-        } else {
-            std::cout << "Resource Ptr is invalid" << std::endl;
-            return NULL;
-        }
-
-        std::cout << resourcePtr->_identifier << std::endl;
-
-        //resourcePtr->setUsrp(usrp);
-        std::cout << usrp->get_mboard_name() << std::endl;
-
-        std::cout << "B" << std::endl;
+        resourcePtr->setUsrp(usrp);
 
         return resourcePtr;
     }
