@@ -53,6 +53,8 @@ extern "C" {
             return NULL;
         }
 
+        std::cout << resourcePtr->_identifier << std::endl;
+
         resourcePtr->setUsrp(usrp);
 
         std::cout << "B" << std::endl;
