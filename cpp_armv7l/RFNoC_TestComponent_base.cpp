@@ -53,6 +53,15 @@ void RFNoC_TestComponent_base::releaseObject() throw (CORBA::SystemException, CF
 
 void RFNoC_TestComponent_base::loadProperties()
 {
+    addProperty(blockID,
+                "",
+                "blockID",
+                "",
+                "readwrite",
+                "",
+                "external",
+                "property");
+
 }
 
 

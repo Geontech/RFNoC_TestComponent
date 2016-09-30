@@ -9,3 +9,4 @@ redhawk_SOURCES_auto += cpp_armv7l/RFNoC_TestComponent_base.cpp
 redhawk_SOURCES_auto += cpp_armv7l/RFNoC_TestComponent_base.h
 redhawk_SOURCES_auto += cpp_armv7l/main.cpp
 redhawk_INCLUDES_auto = -I/var/RedHawk-2.0.2/ossie/include
+redhawk_INCLUDES_auto += -I/home/Patrick/git/uhd/host/include

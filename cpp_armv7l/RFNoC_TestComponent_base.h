@@ -21,6 +21,9 @@ class RFNoC_TestComponent_base : public Component, protected ThreadedComponent
         void loadProperties();
 
     protected:
+        // Member variables exposed as properties
+        /// Property: blockID
+        std::string blockID;
 
     private:
 };

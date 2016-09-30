@@ -36,13 +36,6 @@ Component %{name}
 
 
 %build
-# Implementation cpp_x86
-pushd cpp_x86
-./reconf
-%define _bindir %{_prefix}/dom/components/RFNoC_TestComponent/cpp_x86
-%configure
-make %{?_smp_mflags}
-popd
 # Implementation cpp_armv7l
 pushd cpp_armv7l
 ./reconf
@@ -54,11 +47,6 @@ popd
 
 %install
 rm -rf $RPM_BUILD_ROOT
-# Implementation cpp_x86
-pushd cpp_x86
-%define _bindir %{_prefix}/dom/components/RFNoC_TestComponent/cpp_x86
-make install DESTDIR=$RPM_BUILD_ROOT
-popd
 # Implementation cpp_armv7l
 pushd cpp_armv7l
 %define _bindir %{_prefix}/dom/components/RFNoC_TestComponent/cpp_armv7l
@@ -76,6 +64,5 @@ rm -rf $RPM_BUILD_ROOT
 %{_prefix}/dom/components/RFNoC_TestComponent/RFNoC_TestComponent.scd.xml
 %{_prefix}/dom/components/RFNoC_TestComponent/RFNoC_TestComponent.prf.xml
 %{_prefix}/dom/components/RFNoC_TestComponent/RFNoC_TestComponent.spd.xml
-%{_prefix}/dom/components/RFNoC_TestComponent/cpp_x86
 %{_prefix}/dom/components/RFNoC_TestComponent/cpp_armv7l
 
