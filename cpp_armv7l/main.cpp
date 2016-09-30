@@ -4,6 +4,8 @@
 
 #include "RFNoC_TestComponent.h"
 
+#include <uhd/usrp/multi_usrp.hpp>
+
 RFNoC_TestComponent_i *resourcePtr;
 
 void signal_catcher(int sig)
@@ -26,7 +28,7 @@ int main(int argc, char* argv[])
 }
 
 extern "C" {
-    Resource_impl* construct(int argc, char* argv[], Device_impl* parentDevice) {
+    Resource_impl* construct(int argc, char* argv[], Device_impl* parentDevice, uhd::usrp::multi_usrp::sptr usrp) {
 
         struct sigaction sa;
         sa.sa_handler = signal_catcher;
@@ -41,6 +43,7 @@ extern "C" {
         //      Example:
         //         resourcePtr->setSharedAPI(sharedAPI);
         //resourcePtr->setParentDevice(parentDevice);
+        resourcePtr->setUsrp(usrp);
 
         return resourcePtr;
     }
