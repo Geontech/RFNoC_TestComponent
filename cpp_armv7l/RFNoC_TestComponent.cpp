@@ -38,9 +38,7 @@ void RFNoC_TestComponent_i::constructor()
 
     this->usrp->set_rx_channel(this->rfnocBlock->get_block_id());
 
-    for (size_t i = 0; i < this->usrp->get_rx_num_channels(); ++i) {
-        LOG_INFO(RFNoC_TestComponent_i, "rx_channel[" << i << "]: " << this->usrp->get_rx_channel_id(i));
-    }
+    LOG_INFO(RFNoC_TestComponent_i, this->usrp->get_pp_string());
 }
 
 /***********************************************************************************************
