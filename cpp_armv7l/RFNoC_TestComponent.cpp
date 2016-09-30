@@ -273,6 +273,12 @@ int RFNoC_TestComponent_i::serviceFunction()
 {
     LOG_DEBUG(RFNoC_TestComponent_i, "serviceFunction() example log message");
     
+    bulkio::OutShortPort::ConnectionsList outConnections = this->dataShort_out->getConnections();
+
+    for (bulkio::OutShortPort::ConnectionsList::iterator i = outConnections.begin(); i != outConnections.end(); ++i) {
+        LOG_INFO(RFNoC_TestComponent_i, i->second);
+    }
+
     return NOOP;
 }
 
