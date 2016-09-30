@@ -35,6 +35,10 @@ void RFNoC_TestComponent_i::constructor()
     } else {
         LOG_INFO(RFNoC_TestComponent_i, "Got the block!");
     }
+
+    this->usrp->set_rx_channel(this->rfnocBlock->get_block_id());
+
+    LOG_INFO(RFNoC_TestComponent_i, "The current rx_channel ID is: " << this->usrp->get_rx_channel_id(0));
 }
 
 /***********************************************************************************************
