@@ -247,3 +247,10 @@ int RFNoC_TestComponent_i::serviceFunction()
     return NOOP;
 }
 
+void RFNoC_TestComponent_i::setUsrp(uhd::usrp::multi_usrp::sptr usrp)
+{
+    LOG_INFO(RFNoC_TestComponent_i, "HERE");
+    this->usrp = usrp;
+    LOG_INFO(RFNoC_TestComponent_i, "THERE");
+    LOG_INFO(RFNoC_TestComponent_i, this->usrp->get_pp_string());
+}

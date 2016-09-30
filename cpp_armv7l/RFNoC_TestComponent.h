@@ -16,7 +16,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
 
         int serviceFunction();
 
-        void setUsrp(uhd::usrp::multi_usrp::sptr usrp) { this->usrp = usrp; LOG_INFO(RFNoC_TestComponent_i, "HERE"); /*LOG_INFO(RFNoC_TestComponent_i, this->usrp->get_pp_string());*/ }
+        void setUsrp(uhd::usrp::multi_usrp::sptr usrp);
 
     private:
         uhd::usrp::multi_usrp::sptr usrp;
