@@ -31,5 +31,5 @@ include $(srcdir)/Makefile.am.ide
 lib_LTLIBRARIES = libRFNoC_TestComponent.la
 libRFNoC_TestComponent_la_SOURCES = $(redhawk_SOURCES_auto)
 libRFNoC_TestComponent_la_CXXFLAGS = -Wall $(SOFTPKG_CFLAGS) $(PROJECTDEPS_CFLAGS) $(BOOST_CPPFLAGS) $(INTERFACEDEPS_CFLAGS) $(redhawk_INCLUDES_auto)
-libRFNoC_TestComponent_la_LDFLAGS = -Wall $(redhawk_LDFLAGS_auto)
+libRFNoC_TestComponent_la_LDFLAGS = -Wall $(INTERFACEDEPS_LIBS) $(redhawk_LDFLAGS_auto)
 libdir = $(prefix)/dom/components/RFNoC_TestComponent/cpp_armv7l/.libs
