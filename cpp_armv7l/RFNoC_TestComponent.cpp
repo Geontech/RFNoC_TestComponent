@@ -33,14 +33,12 @@ void RFNoC_TestComponent_i::constructor()
         LOG_FATAL(RFNoC_TestComponent_i, "Unable to retrieve RF-NoC block with ID: " << this->blockID);
         throw std::exception();
     } else {
-        LOG_INFO(RFNoC_TestComponent_i, "Got the block!");
+        LOG_INFO(RFNoC_TestComponent_i, "Got the block: " << this->blockID);
     }
 
-    LOG_INFO(RFNoC_TestComponent_i, "Clearing the channels...");
-    this->usrp->clear_channels();
+    uhd::device_addr_t streamArgs;
 
-    LOG_INFO(RFNoC_TestComponent_i, "Setting RX Channel to " << this->blockID << "...");
-    this->usrp->set_rx_channel(this->rfnocBlock->get_block_id());
+    streamArgs["block_id"] = this->blockID;
 
     LOG_INFO(RFNoC_TestComponent_i, this->usrp->get_pp_string());
 
