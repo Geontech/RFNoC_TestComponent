@@ -27,6 +27,7 @@ void RFNoC_TestComponent_i::constructor()
     /***********************************************************************************
      This is the RH constructor. All properties are properly initialized before this function is called 
     ***********************************************************************************/
+    LOG_INFO(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
 }
 
 /***********************************************************************************************
@@ -253,12 +254,12 @@ void RFNoC_TestComponent_i::setUsrp(uhd::usrp::multi_usrp::sptr usrp)
     this->usrp = usrp;
     LOG_INFO(RFNoC_TestComponent_i, this->usrp->get_pp_string());
 
-    this->rfnocBlock = this->usrp->get_device3()->find_block_ctrl(this->blockID);
+    /*this->rfnocBlock = this->usrp->get_device3()->find_block_ctrl(this->blockID);
 
     if (not this->rfnocBlock) {
         LOG_FATAL(RFNoC_TestComponent_i, "Unable to retrieve RF-NoC block with ID: " << this->blockID);
         throw std::exception();
     } else {
         LOG_INFO(RFNoC_TestComponent_i, "Got the block!");
-    }
+    }*/
 }
