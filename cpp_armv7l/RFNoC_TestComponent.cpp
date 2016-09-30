@@ -36,26 +36,17 @@ void RFNoC_TestComponent_i::constructor()
         LOG_INFO(RFNoC_TestComponent_i, "Got the block: " << this->blockID);
     }
 
-    /*uhd::device_addr_t streamArgArgs;
+    this->message_in->registerMessage("RFNoC_Struct", this, &RFNoC_TestComponent_i::receivedRFNoC_Struct);
 
-    streamArgArgs["block_id"] = this->blockID;
+    RFNoC_Struct_struct out;
+    out.upstreamBlockID = this->blockID;
 
-    uhd::stream_args_t streamArgs;
-    streamArgs.args = streamArgArgs;
+    this->message_out->sendMessage(out);
+}
 
-    uhd::rx_streamer::sptr rx_stream = this->usrp->get_rx_stream(streamArgs);*/
+void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::SystemException)
+{
 
-    bulkio::OutShortPort::ConnectionsList outConnections = this->dataShort_out->getConnections();
-
-    for (bulkio::OutShortPort::ConnectionsList::iterator i = outConnections.begin(); i != outConnections.end(); ++i) {
-        LOG_INFO(RFNoC_TestComponent_i, i->second);
-    }
-
-    LOG_INFO(RFNoC_TestComponent_i, this->usrp->get_pp_string());
-
-    for (size_t i = 0; i < this->usrp->get_rx_num_channels(); ++i) {
-        LOG_INFO(RFNoC_TestComponent_i, "RX Channel[" << i << "]: " << this->usrp->get_rx_channel_id(i));
-    }
 }
 
 /***********************************************************************************************
@@ -272,12 +263,6 @@ void RFNoC_TestComponent_i::constructor()
 int RFNoC_TestComponent_i::serviceFunction()
 {
     LOG_DEBUG(RFNoC_TestComponent_i, "serviceFunction() example log message");
-    
-    bulkio::OutShortPort::ConnectionsList outConnections = this->dataShort_out->getConnections();
-
-    for (bulkio::OutShortPort::ConnectionsList::iterator i = outConnections.begin(); i != outConnections.end(); ++i) {
-        LOG_INFO(RFNoC_TestComponent_i, i->second);
-    }
 
     return NOOP;
 }
@@ -291,4 +276,9 @@ void RFNoC_TestComponent_i::setUsrp(uhd::usrp::multi_usrp::sptr usrp)
         LOG_FATAL(RFNoC_TestComponent_i, "Received a USRP which is not RF-NoC compatible.");
         throw std::exception();
     }
+}
+
+void RFNoC_TestComponent_i::receivedRFNoC_Struct(const std::string &msgId, const RFNoC_Struct_struct &msg)
+{
+    LOG_INFO(RFNoC_TestComponent_i, msg.upstreamBlockID << " -> " << this->blockID)
 }

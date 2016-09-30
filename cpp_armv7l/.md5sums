@@ -1,10 +1,11 @@
 f0471b6dc83f2177a56b5d09e6b525b7  main.cpp
 8bfcd22353c3a57fee561ad86ee2a56b  reconf
 618a31c64ad9c9c8dca0f721864f8c39  RFNoC_TestComponent.cpp
-d8e2ab3ff5008d8ea60148ebbedd0e3d  RFNoC_TestComponent_base.cpp
+509fcdfa3f6d5f8cae2034469f9b258f  RFNoC_TestComponent_base.cpp
 37f45d6db44cd11c0453dac79007b18e  configure.ac
 55969af369be3ee4088cec015f38c317  Makefile.am
-0651a0f556e93fc7209d5ffde3a44769  RFNoC_TestComponent_base.h
+6602ccc69a676d1d624fc495b4766764  RFNoC_TestComponent_base.h
 c276a297f0887e3865616b944c9480a4  Makefile.am.ide
+60b247db3e1c6c200c02da07369da4dd  struct_props.h
 c13508714ff638fcc32f23a8f9fd548b  RFNoC_TestComponent.h
 b87651ea3565402473fb088004430fbf  build.sh

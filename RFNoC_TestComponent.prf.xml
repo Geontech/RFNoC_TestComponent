@@ -7,4 +7,11 @@
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>
+  <struct id="RFNoC_Struct" mode="readwrite">
+    <simple id="RFNoC_Struct::upstreamBlockID" name="upstreamBlockID" type="string">
+      <description>The block ID of the block before this one.</description>
+      <value></value>
+    </simple>
+    <configurationkind kindtype="property"/>
+  </struct>
 </properties>

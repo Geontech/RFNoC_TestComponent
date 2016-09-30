@@ -6,6 +6,8 @@
 #include <ossie/ThreadedComponent.h>
 
 #include <bulkio/bulkio.h>
+#include <ossie/MessageInterface.h>
+#include "struct_props.h"
 
 class RFNoC_TestComponent_base : public Component, protected ThreadedComponent
 {
@@ -25,12 +27,18 @@ class RFNoC_TestComponent_base : public Component, protected ThreadedComponent
         // Member variables exposed as properties
         /// Property: blockID
         std::string blockID;
+        /// Property: RFNoC_Struct
+        RFNoC_Struct_struct RFNoC_Struct;
 
         // Ports
         /// Port: dataShort_in
         bulkio::InShortPort *dataShort_in;
+        /// Port: message_in
+        MessageConsumerPort *message_in;
         /// Port: dataShort_out
         bulkio::OutShortPort *dataShort_out;
+        /// Port: message_out
+        MessageSupplierPort *message_out;
 
     private:
 };

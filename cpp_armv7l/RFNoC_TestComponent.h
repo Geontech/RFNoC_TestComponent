@@ -15,9 +15,13 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
 
         void constructor();
 
+        void start() throw (CF::Resource::StartError, CORBA::SystemException);
         int serviceFunction();
 
         void setUsrp(uhd::usrp::multi_usrp::sptr usrp);
+
+    private:
+        void receivedRFNoC_Struct(const std::string &msgId, const RFNoC_Struct_struct &msg);
 
     private:
         uhd::usrp::multi_usrp::sptr usrp;
