@@ -43,7 +43,9 @@ extern "C" {
         //      Example:
         //         resourcePtr->setSharedAPI(sharedAPI);
         //resourcePtr->setParentDevice(parentDevice);
+        std::cout << "A" << std::endl;
         resourcePtr->setUsrp(usrp);
+        std::cout << "B" << std::endl;
 
         return resourcePtr;
     }
