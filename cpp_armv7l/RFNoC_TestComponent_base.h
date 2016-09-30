@@ -5,6 +5,7 @@
 #include <ossie/Component.h>
 #include <ossie/ThreadedComponent.h>
 
+#include <bulkio/bulkio.h>
 
 class RFNoC_TestComponent_base : public Component, protected ThreadedComponent
 {
@@ -24,6 +25,12 @@ class RFNoC_TestComponent_base : public Component, protected ThreadedComponent
         // Member variables exposed as properties
         /// Property: blockID
         std::string blockID;
+
+        // Ports
+        /// Port: dataShort_in
+        bulkio::InShortPort *dataShort_in;
+        /// Port: dataShort_out
+        bulkio::OutShortPort *dataShort_out;
 
     private:
 };

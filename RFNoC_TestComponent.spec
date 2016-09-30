@@ -24,6 +24,10 @@ BuildRequires:  redhawk-devel >= 2.0
 Requires:       redhawk >= 2.0
 
 
+# Interface requirements
+BuildRequires:  bulkioInterfaces >= 2.0
+Requires:       bulkioInterfaces >= 2.0
+
 
 %description
 Component %{name}
