@@ -45,23 +45,10 @@ void RFNoC_TestComponent_i::constructor()
 
     uhd::rx_streamer::sptr rx_stream = this->usrp->get_rx_stream(streamArgs);*/
 
-    /*bulkio::OutShortPort::ConnectionsList outConnections = this->dataShort_out->getConnections();
+    bulkio::OutShortPort::ConnectionsList outConnections = this->dataShort_out->getConnections();
 
-    for (bulkio::OutShortPort::ConnectionsList::iterator i; i = outConnections.begin(); ++i) {
-        LOG_INFO(RFNoC_TestComponent_i, i->first->
-    }*/
-
-    CF::ConnectionManager_ptr cm = this->getDomainManager()->getRef()->connectionMgr();
-
-    CF::ConnectionManager::ConnectionStatusSequence *connections = cm->connections();
-
-    LOG_INFO(RFNoC_TestComponent_i, this->_identifier);
-
-    for (size_t i = 0; i < connections->length(); ++i) {
-        CF::ConnectionManager::ConnectionStatusType connection = connections->operator [](i);
-
-        LOG_INFO(RFNoC_TestComponent_i, connection.providesEndpoint.entityId._ptr);
-        LOG_INFO(RFNoC_TestComponent_i, connection.usesEndpoint.entityId._ptr);
+    for (bulkio::OutShortPort::ConnectionsList::iterator i = outConnections.begin(); i != outConnections.end(); ++i) {
+        LOG_INFO(RFNoC_TestComponent_i, i->second);
     }
 
     LOG_INFO(RFNoC_TestComponent_i, this->usrp->get_pp_string());
