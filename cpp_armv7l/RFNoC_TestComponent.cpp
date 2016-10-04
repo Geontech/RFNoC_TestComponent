@@ -260,17 +260,18 @@ int RFNoC_TestComponent_i::serviceFunction()
     LOG_DEBUG(RFNoC_TestComponent_i, "serviceFunction() example log message");
 
     if (this->upstreamBlockID == "") {
-        LOG_INFO(RFNoC_TestComponent_i, "Getting the current stream");
-        bulkio::InShortStream stream = this->dataShort_in->getCurrentStream(-1);
+        LOG_INFO(RFNoC_TestComponent_i, "Getting active SRIs");
 
-        if (not stream) {
-            LOG_INFO(RFNoC_TestComponent_i, "There isn't one");
+        BULKIO::StreamSRISequence *SRIs = this->dataShort_in->activeSRIs();
+
+        if (SRIs->length() == 0) {
+            LOG_INFO(RFNoC_TestComponent_i, "No SRIs available");
             return NOOP;
         }
 
-        LOG_INFO(RFNoC_TestComponent_i, "Got the current stream, getting the SRI");
+        LOG_INFO(RFNoC_TestComponent_i, "Got the active SRIs, grabbing the first");
 
-        BULKIO::StreamSRI sri = stream.sri();
+        BULKIO::StreamSRI sri = SRIs->operator [](0);
 
         redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
 
