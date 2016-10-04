@@ -13,8 +13,9 @@ PREPARE_LOGGING(RFNoC_TestComponent_i)
 
 RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label) :
     RFNoC_TestComponent_base(uuid, label),
-    channelInitialized(false),
-    firstPass(true)
+    firstPass(true),
+    rxChannelInitialized(false),
+    txChannelInitialized(false)
 {
 }
 
@@ -316,23 +317,81 @@ int RFNoC_TestComponent_i::serviceFunction()
     } else {
         // This is the first block in the chain
         if (this->upstreamBlockID == "") {
-            if (not this->channelInitialized) {
+            if (not this->txChannelInitialized) {
                 LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
 
                 this->usrp->set_tx_channel(this->blockID);
 
-                this->channelInitialized = true;
+                this->txChannelInitialized = true;
+
+                uhd::stream_args_t stream_args("sc16", "sc16");
+
+                this->txStream = this->usrp->get_tx_stream(stream_args);
             }
-        } else if (this->rfnocBlock->list_downstream_nodes().size() == 0){
-            if (not this->channelInitialized) {
+
+            bulkio::InShortStream inputStream = this->dataShort_in->getCurrentStream(-1);
+
+            if (not inputStream) {
+                return NOOP;
+            }
+
+            bulkio::ShortDataBlock block = inputStream.read();
+
+            if (not block) {
+                if (inputStream.eos()) {
+                    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "EOS");
+                }
+
+                return NOOP;
+            }
+
+            uhd::tx_metadata_t md;
+            std::vector<short> out;
+            out.assign(block.data(), block.data() + block.size());
+
+            this->txStream->send(out, out.size(), md);
+        }
+
+        if (this->rfnocBlock->list_downstream_nodes().size() == 0){
+            if (not this->rxChannelInitialized) {
                 LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
 
                 this->usrp->set_rx_channel(this->blockID);
 
-                this->channelInitialized = true;
+                this->rxChannelInitialized = true;
+
+                uhd::stream_args_t stream_args("sc16", "sc16");
+
+                this->rxStream = this->usrp->get_rx_stream(stream_args);
             }
-        } else {
-            return FINISH;
+
+            uhd::rx_metadata_t md;
+            std::vector<short> output;
+
+            output.resize(1000);
+
+            size_t num_rx_samps = this->rxStream->recv(output, output.size(), md);
+
+            if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
+                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Timeout while streaming");
+                return NOOP;
+            } else if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_OVERFLOW) {
+                LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Overflow while streaming");
+            } else if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
+                LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << md.strerror());
+                return NOOP;
+            }
+
+            if (not this->outShortStream) {
+                this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
+            }
+
+            BULKIO::PrecisionUTCTime rxTime;
+
+            rxTime.twsec = md.time_spec.get_full_secs();
+            rxTime.tfsec = md.time_spec.get_frac_secs();
+
+            this->outShortStream.write(output.data(), num_rx_samps, rxTime);
         }
     }
 
