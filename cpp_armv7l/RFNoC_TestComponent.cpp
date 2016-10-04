@@ -36,15 +36,12 @@ void RFNoC_TestComponent_i::constructor()
         LOG_INFO(RFNoC_TestComponent_i, "Got the block: " << this->blockID);
     }
 
-    this->message_in->registerMessage("RFNoC_Struct", this, &RFNoC_TestComponent_i::receivedRFNoC_Struct);
-}
+    BULKIO::StreamSRI sri;
 
-void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::SystemException)
-{
-    RFNoC_Struct_struct out;
-    out.upstreamBlockID = this->blockID;
+    redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
+    tmp["RF-NoC_Block_ID"] = this->blockID;
 
-    this->message_out->sendMessage(out);
+    this->dataShort_out->pushSRI(sri);
 }
 
 /***********************************************************************************************
@@ -262,7 +259,32 @@ int RFNoC_TestComponent_i::serviceFunction()
 {
     LOG_DEBUG(RFNoC_TestComponent_i, "serviceFunction() example log message");
 
-    return NOOP;
+    if (this->upstreamBlockID == "") {
+        bulkio::InShortStream stream = this->dataShort_in->getCurrentStream(-1);
+
+        if (not stream) {
+            return NOOP;
+        }
+
+        BULKIO::StreamSRI sri = stream.sri();
+
+        redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
+
+        if (tmp.contains("RF-NoC_Block_ID")) {
+            LOG_INFO(RFNoC_TestComponent_i, "Found RF-NoC_Block_ID keyword");
+
+            if (not (tmp["RF-NoC_Block_ID"] >>= this->upstreamBlockID)) {
+                LOG_WARN(RFNoC_TestComponent_i, "Unable to retrieve upstream block ID");
+            }
+        }
+
+        if (this->upstreamBlockID != "") {
+            LOG_INFO(RFNoC_TestComponent_i, this->upstreamBlockID << " -> " << this->blockID);
+            this->usrp->connect(this->blockID, this->upstreamBlockID);
+        }
+    }
+
+    return NORMAL;
 }
 
 void RFNoC_TestComponent_i::setUsrp(uhd::usrp::multi_usrp::sptr usrp)
@@ -274,9 +296,4 @@ void RFNoC_TestComponent_i::setUsrp(uhd::usrp::multi_usrp::sptr usrp)
         LOG_FATAL(RFNoC_TestComponent_i, "Received a USRP which is not RF-NoC compatible.");
         throw std::exception();
     }
-}
-
-void RFNoC_TestComponent_i::receivedRFNoC_Struct(const std::string &msgId, const RFNoC_Struct_struct &msg)
-{
-    LOG_INFO(RFNoC_TestComponent_i, msg.upstreamBlockID << " -> " << this->blockID)
 }

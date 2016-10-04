@@ -21,11 +21,9 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         void setUsrp(uhd::usrp::multi_usrp::sptr usrp);
 
     private:
-        void receivedRFNoC_Struct(const std::string &msgId, const RFNoC_Struct_struct &msg);
-
-    private:
-        uhd::usrp::multi_usrp::sptr usrp;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
+        std::string upstreamBlockID;
+        uhd::usrp::multi_usrp::sptr usrp;
 };
 
 #endif // RFNOC_TESTCOMPONENT_I_IMPL_H
