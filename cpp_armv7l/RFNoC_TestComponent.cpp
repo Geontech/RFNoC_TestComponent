@@ -13,6 +13,7 @@ PREPARE_LOGGING(RFNoC_TestComponent_i)
 
 RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label) :
     RFNoC_TestComponent_base(uuid, label),
+    channelInitialized(false),
     firstPass(true)
 {
 }
@@ -315,11 +316,23 @@ int RFNoC_TestComponent_i::serviceFunction()
     } else {
         // This is the first block in the chain
         if (this->upstreamBlockID == "") {
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
+            if (not this->channelInitialized) {
+                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
+
+                this->usrp->set_tx_channel(this->blockID);
+
+                this->channelInitialized = true;
+            }
         } else if (this->rfnocBlock->list_downstream_nodes().size() == 0){
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
+            if (not this->channelInitialized) {
+                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
+
+                this->usrp->set_rx_channel(this->blockID);
+
+                this->channelInitialized = true;
+            }
         } else {
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->upstreamBlockID << " -> " << this->blockID);
+            return FINISH;
         }
     }
 

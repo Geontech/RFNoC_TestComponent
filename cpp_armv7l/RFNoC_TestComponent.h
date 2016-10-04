@@ -21,6 +21,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         void setUsrp(uhd::usrp::multi_usrp::sptr usrp);
 
     private:
+        bool channelInitialized;
         bool firstPass;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
         std::string upstreamBlockID;
