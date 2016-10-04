@@ -43,7 +43,7 @@ void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::Syst
     RFNoC_TestComponent_base::start();
 
     if (not wasStarted) {
-        LOG_INFO(RFNoC_TestComponent_i, "Pushing SRI");
+        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Pushing SRI");
 
         BULKIO::StreamSRI sri;
 
@@ -276,31 +276,31 @@ int RFNoC_TestComponent_i::serviceFunction()
         // Clear the firstPass flag
         this->firstPass = false;
 
-        LOG_INFO(RFNoC_TestComponent_i, "Getting active SRIs");
+        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Getting active SRIs");
 
         BULKIO::StreamSRISequence *SRIs = this->dataShort_in->activeSRIs();
 
         if (SRIs->length() == 0) {
-            LOG_INFO(RFNoC_TestComponent_i, "No SRIs available");
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "No SRIs available");
             return NOOP;
         }
 
-        LOG_INFO(RFNoC_TestComponent_i, "Got the active SRIs, grabbing the first");
+        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Got the active SRIs, grabbing the first");
 
         BULKIO::StreamSRI sri = SRIs->operator [](0);
 
         redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
 
-        LOG_INFO(RFNoC_TestComponent_i, "Got the SRI, checking for keyword");
+        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Got the SRI, checking for keyword");
 
         if (tmp.contains("RF-NoC_Block_ID")) {
-            LOG_INFO(RFNoC_TestComponent_i, "Found RF-NoC_Block_ID keyword");
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Found RF-NoC_Block_ID keyword");
 
             if (not (tmp["RF-NoC_Block_ID"] >>= this->upstreamBlockID)) {
-                LOG_WARN(RFNoC_TestComponent_i, "Unable to retrieve upstream block ID");
+                LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Unable to retrieve upstream block ID");
             }
         } else {
-            LOG_INFO(RFNoC_TestComponent_i, "Did not find RF-NoC_Block_ID keyword");
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Did not find RF-NoC_Block_ID keyword");
         }
 
         if (this->upstreamBlockID != "") {
@@ -309,9 +309,9 @@ int RFNoC_TestComponent_i::serviceFunction()
     } else {
         // This is the first block in the chain
         if (this->upstreamBlockID == "") {
-            LOG_INFO(RFNoC_TestComponent_i, "Host -> " << this->blockID);
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
         } else {
-            LOG_INFO(RFNoC_TestComponent_i, this->upstreamBlockID << " -> " << this->blockID);
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->upstreamBlockID << " -> " << this->blockID);
         }
     }
 
