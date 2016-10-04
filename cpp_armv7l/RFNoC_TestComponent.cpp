@@ -271,8 +271,6 @@ int RFNoC_TestComponent_i::serviceFunction()
 {
     LOG_DEBUG(RFNoC_TestComponent_i, "serviceFunction() example log message");
 
-    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "The address of the firstPass variable is: " << &this->firstPass);
-
     // Determine if the upstream component is also an RF-NoC Component
     if (this->firstPass) {
         // Clear the firstPass flag
@@ -298,9 +296,7 @@ int RFNoC_TestComponent_i::serviceFunction()
         if (tmp.contains("RF-NoC_Block_ID")) {
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Found RF-NoC_Block_ID keyword");
 
-            if (not (tmp["RF-NoC_Block_ID"] >>= this->upstreamBlockID)) {
-                LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Unable to retrieve upstream block ID");
-            }
+            this->upstreamBlockID = tmp["RF-NoC_Block_ID"].toString();
         } else {
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Did not find RF-NoC_Block_ID keyword");
         }
@@ -308,6 +304,8 @@ int RFNoC_TestComponent_i::serviceFunction()
         if (this->upstreamBlockID != "") {
             this->usrp->connect(this->upstreamBlockID, this->blockID);
         }
+
+        delete SRIs;
     } else {
         // This is the first block in the chain
         if (this->upstreamBlockID == "") {
