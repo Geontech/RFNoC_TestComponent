@@ -304,7 +304,11 @@ int RFNoC_TestComponent_i::serviceFunction()
         }
 
         if (this->upstreamBlockID != "") {
-            this->usrp->connect(this->upstreamBlockID, this->blockID);
+            try {
+                this->usrp->connect(this->upstreamBlockID, this->blockID);
+            } catch(uhd::runtime_error &e) {
+                LOG_WARN(RFNoC_TestComponent_i, this->blockID << " failed to connect: " << this->upstreamBlockID << " -> " << this->blockID)
+            }
         }
 
         delete SRIs;
