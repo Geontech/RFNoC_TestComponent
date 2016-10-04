@@ -12,10 +12,9 @@
 PREPARE_LOGGING(RFNoC_TestComponent_i)
 
 RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label) :
-    RFNoC_TestComponent_base(uuid, label)
+    RFNoC_TestComponent_base(uuid, label),
+    sriPushed(false)
 {
-    // Avoid placing constructor code here. Instead, use the "constructor" function.
-
 }
 
 RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
@@ -35,13 +34,6 @@ void RFNoC_TestComponent_i::constructor()
     } else {
         LOG_INFO(RFNoC_TestComponent_i, "Got the block: " << this->blockID);
     }
-
-    BULKIO::StreamSRI sri;
-
-    redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
-    tmp["RF-NoC_Block_ID"] = this->blockID;
-
-    this->dataShort_out->pushSRI(sri);
 }
 
 /***********************************************************************************************
@@ -258,6 +250,19 @@ void RFNoC_TestComponent_i::constructor()
 int RFNoC_TestComponent_i::serviceFunction()
 {
     LOG_DEBUG(RFNoC_TestComponent_i, "serviceFunction() example log message");
+
+    if (not this->sriPushed) {
+        LOG_INFO(RFNoC_TestComponent_i, "Pushing SRI");
+
+        BULKIO::StreamSRI sri;
+
+        redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
+        tmp["RF-NoC_Block_ID"] = this->blockID;
+
+        this->dataShort_out->pushSRI(sri);
+
+        this->sriPushed = true;
+    }
 
     if (this->upstreamBlockID == "") {
         LOG_INFO(RFNoC_TestComponent_i, "Getting active SRIs");
