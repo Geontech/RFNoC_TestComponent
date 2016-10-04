@@ -271,6 +271,8 @@ int RFNoC_TestComponent_i::serviceFunction()
 {
     LOG_DEBUG(RFNoC_TestComponent_i, "serviceFunction() example log message");
 
+    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "The address of the firstPass variable is: " << &this->firstPass);
+
     // Determine if the upstream component is also an RF-NoC Component
     if (this->firstPass) {
         // Clear the firstPass flag
