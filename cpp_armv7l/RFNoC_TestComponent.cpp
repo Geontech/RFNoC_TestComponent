@@ -316,6 +316,8 @@ int RFNoC_TestComponent_i::serviceFunction()
         // This is the first block in the chain
         if (this->upstreamBlockID == "") {
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
+        } else if (this->rfnocBlock->list_downstream_nodes().size() == 0){
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
         } else {
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->upstreamBlockID << " -> " << this->blockID);
         }
