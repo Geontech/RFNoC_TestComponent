@@ -304,13 +304,14 @@ int RFNoC_TestComponent_i::serviceFunction()
         }
 
         if (this->upstreamBlockID != "") {
-            LOG_INFO(RFNoC_TestComponent_i, this->upstreamBlockID << " -> " << this->blockID);
-            this->usrp->connect(this->blockID, this->upstreamBlockID);
+            this->usrp->connect(this->upstreamBlockID, this->blockID);
         }
     } else {
         // This is the first block in the chain
         if (this->upstreamBlockID == "") {
-
+            LOG_INFO(RFNoC_TestComponent_i, "Host -> " << this->blockID);
+        } else {
+            LOG_INFO(RFNoC_TestComponent_i, this->upstreamBlockID << " -> " << this->blockID);
         }
     }
 

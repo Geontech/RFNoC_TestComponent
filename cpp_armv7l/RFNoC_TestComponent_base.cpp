@@ -18,24 +18,16 @@ RFNoC_TestComponent_base::RFNoC_TestComponent_base(const char *uuid, const char 
 
     dataShort_in = new bulkio::InShortPort("dataShort_in");
     addPort("dataShort_in", dataShort_in);
-    message_in = new MessageConsumerPort("message_in");
-    addPort("message_in", message_in);
     dataShort_out = new bulkio::OutShortPort("dataShort_out");
     addPort("dataShort_out", dataShort_out);
-    message_out = new MessageSupplierPort("message_out");
-    addPort("message_out", message_out);
 }
 
 RFNoC_TestComponent_base::~RFNoC_TestComponent_base()
 {
     delete dataShort_in;
     dataShort_in = 0;
-    delete message_in;
-    message_in = 0;
     delete dataShort_out;
     dataShort_out = 0;
-    delete message_out;
-    message_out = 0;
 }
 
 /*******************************************************************************************
@@ -73,15 +65,6 @@ void RFNoC_TestComponent_base::loadProperties()
     addProperty(blockID,
                 "",
                 "blockID",
-                "",
-                "readwrite",
-                "",
-                "external",
-                "property");
-
-    addProperty(RFNoC_Struct,
-                RFNoC_Struct_struct(),
-                "RFNoC_Struct",
                 "",
                 "readwrite",
                 "",
