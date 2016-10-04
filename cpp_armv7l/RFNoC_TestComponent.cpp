@@ -352,6 +352,7 @@ int RFNoC_TestComponent_i::serviceFunction()
             out.assign(block.data(), block.data() + block.size());
 
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Output vector is of size: " << out.size());
 
             this->txStream->send(out, out.size(), md);
 
