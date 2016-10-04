@@ -38,6 +38,8 @@ void RFNoC_TestComponent_i::constructor()
 
 void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::SystemException)
 {
+    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Started");
+
     bool wasStarted = this->_started;
 
     RFNoC_TestComponent_base::start();
