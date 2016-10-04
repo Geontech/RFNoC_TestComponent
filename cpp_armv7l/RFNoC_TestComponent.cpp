@@ -260,15 +260,21 @@ int RFNoC_TestComponent_i::serviceFunction()
     LOG_DEBUG(RFNoC_TestComponent_i, "serviceFunction() example log message");
 
     if (this->upstreamBlockID == "") {
+        LOG_INFO(RFNoC_TestComponent_i, "Getting the current stream");
         bulkio::InShortStream stream = this->dataShort_in->getCurrentStream(-1);
 
         if (not stream) {
+            LOG_INFO(RFNoC_TestComponent_i, "There isn't one");
             return NOOP;
         }
+
+        LOG_INFO(RFNoC_TestComponent_i, "Got the current stream, getting the SRI");
 
         BULKIO::StreamSRI sri = stream.sri();
 
         redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
+
+        LOG_INFO(RFNoC_TestComponent_i, "Got the SRI, checking for keyword");
 
         if (tmp.contains("RF-NoC_Block_ID")) {
             LOG_INFO(RFNoC_TestComponent_i, "Found RF-NoC_Block_ID keyword");
@@ -276,6 +282,8 @@ int RFNoC_TestComponent_i::serviceFunction()
             if (not (tmp["RF-NoC_Block_ID"] >>= this->upstreamBlockID)) {
                 LOG_WARN(RFNoC_TestComponent_i, "Unable to retrieve upstream block ID");
             }
+        } else {
+            LOG_INFO(RFNoC_TestComponent_i, "Did not find RF-NoC_Block_ID keyword");
         }
 
         if (this->upstreamBlockID != "") {
