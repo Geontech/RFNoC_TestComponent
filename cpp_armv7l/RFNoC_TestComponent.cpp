@@ -13,7 +13,7 @@ PREPARE_LOGGING(RFNoC_TestComponent_i)
 
 RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label) :
     RFNoC_TestComponent_base(uuid, label),
-    sriPushed(false)
+    firstPass(true)
 {
 }
 
@@ -33,6 +33,26 @@ void RFNoC_TestComponent_i::constructor()
         throw std::exception();
     } else {
         LOG_INFO(RFNoC_TestComponent_i, "Got the block: " << this->blockID);
+    }
+}
+
+void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::SystemException)
+{
+    bool wasStarted = this->_started;
+
+    RFNoC_TestComponent_base::start();
+
+    if (not wasStarted) {
+        LOG_INFO(RFNoC_TestComponent_i, "Pushing SRI");
+
+        BULKIO::StreamSRI sri;
+
+        redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
+        tmp["RF-NoC_Block_ID"] = this->blockID;
+
+        this->dataShort_out->pushSRI(sri);
+
+        this->firstPass = true;
     }
 }
 
@@ -251,20 +271,11 @@ int RFNoC_TestComponent_i::serviceFunction()
 {
     LOG_DEBUG(RFNoC_TestComponent_i, "serviceFunction() example log message");
 
-    if (not this->sriPushed) {
-        LOG_INFO(RFNoC_TestComponent_i, "Pushing SRI");
+    // Determine if the upstream component is also an RF-NoC Component
+    if (this->firstPass) {
+        // Clear the firstPass flag
+        this->firstPass = false;
 
-        BULKIO::StreamSRI sri;
-
-        redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
-        tmp["RF-NoC_Block_ID"] = this->blockID;
-
-        this->dataShort_out->pushSRI(sri);
-
-        this->sriPushed = true;
-    }
-
-    if (this->upstreamBlockID == "") {
         LOG_INFO(RFNoC_TestComponent_i, "Getting active SRIs");
 
         BULKIO::StreamSRISequence *SRIs = this->dataShort_in->activeSRIs();
@@ -295,6 +306,11 @@ int RFNoC_TestComponent_i::serviceFunction()
         if (this->upstreamBlockID != "") {
             LOG_INFO(RFNoC_TestComponent_i, this->upstreamBlockID << " -> " << this->blockID);
             this->usrp->connect(this->blockID, this->upstreamBlockID);
+        }
+    } else {
+        // This is the first block in the chain
+        if (this->upstreamBlockID == "") {
+
         }
     }
 

@@ -15,13 +15,14 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
 
         void constructor();
 
+        void start() throw (CF::Resource::StartError, CORBA::SystemException);
         int serviceFunction();
 
         void setUsrp(uhd::usrp::multi_usrp::sptr usrp);
 
     private:
+        bool firstPass;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
-        bool sriPushed;
         std::string upstreamBlockID;
         uhd::usrp::multi_usrp::sptr usrp;
 };
