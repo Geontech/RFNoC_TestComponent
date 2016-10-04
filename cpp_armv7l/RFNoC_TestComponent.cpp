@@ -329,7 +329,7 @@ int RFNoC_TestComponent_i::serviceFunction()
                 this->txStream = this->usrp->get_tx_stream(stream_args);
             }
 
-            bulkio::InShortStream inputStream = this->dataShort_in->getCurrentStream(-1);
+            bulkio::InShortStream inputStream = this->dataShort_in->getCurrentStream(0.0);
 
             if (not inputStream) {
                 return NOOP;
@@ -345,11 +345,17 @@ int RFNoC_TestComponent_i::serviceFunction()
                 return NOOP;
             }
 
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << block.size() << " samples");
+
             uhd::tx_metadata_t md;
             std::vector<short> out;
             out.assign(block.data(), block.data() + block.size());
 
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
+
             this->txStream->send(out, out.size(), md);
+
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
         }
 
         if (this->rfnocBlock->list_downstream_nodes().size() == 0){
