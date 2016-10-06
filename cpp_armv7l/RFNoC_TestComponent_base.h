@@ -6,6 +6,7 @@
 #include <ossie/ThreadedComponent.h>
 
 #include <bulkio/bulkio.h>
+#include "struct_props.h"
 
 class RFNoC_TestComponent_base : public Component, protected ThreadedComponent
 {
@@ -25,6 +26,8 @@ class RFNoC_TestComponent_base : public Component, protected ThreadedComponent
         // Member variables exposed as properties
         /// Property: blockID
         std::string blockID;
+        /// Property: args
+        std::vector<arg_struct> args;
 
         // Ports
         /// Port: dataShort_in

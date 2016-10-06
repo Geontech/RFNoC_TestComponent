@@ -71,6 +71,14 @@ void RFNoC_TestComponent_base::loadProperties()
                 "external",
                 "property");
 
+    addProperty(args,
+                "args",
+                "",
+                "readwrite",
+                "",
+                "external",
+                "property");
+
 }
 
 

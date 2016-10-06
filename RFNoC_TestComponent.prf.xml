@@ -7,4 +7,26 @@
     <kind kindtype="property"/>
     <action type="external"/>
   </simple>
+  <structsequence id="args" mode="readwrite">
+    <struct id="arg">
+      <simple id="args::id" name="id" type="string">
+        <description>The ID of the argument to set.</description>
+        <value></value>
+      </simple>
+      <simple id="args::value" name="value" type="string">
+        <description>The value of the argument to set.</description>
+        <value></value>
+      </simple>
+      <simple id="args::type" name="type" type="string">
+        <description>The type of the value to set.</description>
+        <value>INT</value>
+        <enumerations>
+          <enumeration label="INT" value="INT"/>
+          <enumeration label="DOUBLE" value="DOUBLE"/>
+          <enumeration label="STRING" value="STRING"/>
+        </enumerations>
+      </simple>
+    </struct>
+    <configurationkind kindtype="property"/>
+  </structsequence>
 </properties>

@@ -36,6 +36,8 @@ void RFNoC_TestComponent_i::constructor()
     } else {
         LOG_INFO(RFNoC_TestComponent_i, "Got the block: " << this->blockID);
     }
+
+    this->addPropertyChangeListener("args", this, &RFNoC_TestComponent_i::argsChanged);
 }
 
 void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::SystemException)
@@ -413,5 +415,83 @@ void RFNoC_TestComponent_i::setUsrp(uhd::usrp::multi_usrp::sptr usrp)
     if (not usrp or not usrp->is_device3()) {
         LOG_FATAL(RFNoC_TestComponent_i, "Received a USRP which is not RF-NoC compatible.");
         throw std::exception();
+    }
+}
+
+void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> *oldValue, const std::vector<arg_struct> *newValue)
+{
+    if (not this->rfnocBlock) {
+        LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Unable to set new arguments, RF-NoC block is not set");
+        return;
+    }
+
+    std::vector<size_t> invalidIndices;
+
+    for (size_t i = 0; i < this->args.size(); ++i) {
+        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->args[i].id << "(" << this->args[i].type << "): " << this->args[i].value);
+
+        this->rfnocBlock->set_arg(this->args[i].id, this->args[i].value);
+
+        if (this->rfnocBlock->get_arg(this->args[i].id) != this->args[i].value) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << this->args[i].id << "(" << this->args[i].type << ") to " << this->args[i].value);
+            invalidIndices.push_back(i);
+        }
+
+        /*std::stringstream ss;
+
+        ss << this->args[i].value;
+
+        switch (this->args[i].type) {
+            case "INT": {
+                int value;
+
+                ss >> value;
+
+                this->rfnocBlock->set_arg<int>(this->args[i].id, int(value));
+
+                if (this->rfnocBlock->get_arg<int>(this->args[i].id) != int(value)) {
+                    LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << this->args[i].id << "(" << this->args[i].type << ") to " << this->args[i].value);
+                    invalidIndices.push_back(i);
+                }
+                break;
+            }
+
+            case "DOUBLE": {
+                double value;
+
+                ss >> value;
+
+                this->rfnocBlock->set_arg<double>(this->args[i].id, double(value));
+
+                if (this->rfnocBlock->get_arg<double>(this->args[i].id) != double(value)) {
+                    LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << this->args[i].id << "(" << this->args[i].type << ") to " << this->args[i].value);
+                    invalidIndices.push_back(i);
+                }
+
+                break;
+            }
+
+            case "STRING": {
+                std::string value = this->args[i].value;
+
+                this->rfnocBlock->set_arg<>(this->args[i].id, int(value));
+
+                if (this->rfnocBlock->get_arg<int>(this->args[i].id) != int(value)) {
+                    LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << this->args[i].id << "(" << this->args[i].type << ") to " << this->args[i].value);
+                    invalidIndices.push_back(i);
+                }
+
+                break;
+            }
+
+            default: {
+                LOG_WARN(RFNoC_TestComponent_i, "argument type must be: INT, DOUBLE, STRING");
+                invalidIndices.push_back(i);
+            }
+        }*/
+    }
+
+    for (std::vector<size_t>::reverse_iterator i = invalidIndices.rbegin(); i != invalidIndices.rend(); ++i) {
+        this->args.erase(this->args.begin() + *i);
     }
 }
