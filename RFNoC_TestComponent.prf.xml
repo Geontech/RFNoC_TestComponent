@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties PUBLIC "-//JTRS//DTD SCA V2.2.2 PRF//EN" "properties.dtd">
 <properties>
-  <simple id="blockID" mode="readwrite" type="string">
+  <simple id="blockID" mode="readwrite" type="string" commandline="true">
     <description>The ID of the RF-NoC block to attach to.</description>
     <value></value>
     <kind kindtype="property"/>
@@ -16,15 +16,6 @@
       <simple id="args::value" name="value" type="string">
         <description>The value of the argument to set.</description>
         <value></value>
-      </simple>
-      <simple id="args::type" name="type" type="string">
-        <description>The type of the value to set.</description>
-        <value>INT</value>
-        <enumerations>
-          <enumeration label="INT" value="INT"/>
-          <enumeration label="DOUBLE" value="DOUBLE"/>
-          <enumeration label="STRING" value="STRING"/>
-        </enumerations>
       </simple>
     </struct>
     <configurationkind kindtype="property"/>

@@ -6,6 +6,6 @@ f0471b6dc83f2177a56b5d09e6b525b7  main.cpp
 55969af369be3ee4088cec015f38c317  Makefile.am
 8bcbb28720a763339860e03176e0458e  RFNoC_TestComponent_base.h
 c276a297f0887e3865616b944c9480a4  Makefile.am.ide
-a4cbc579e86edae058440300075a4ace  struct_props.h
+41a2219e319ffab29f4afc68eb65c660  struct_props.h
 c13508714ff638fcc32f23a8f9fd548b  RFNoC_TestComponent.h
 b87651ea3565402473fb088004430fbf  build.sh

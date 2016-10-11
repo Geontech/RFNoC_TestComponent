@@ -16,10 +16,13 @@ RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label
     firstPass(true),
     secondPass(false)
 {
+    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
 }
 
 RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
 {
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
     if (this->rfnocBlock) {
         this->rfnocBlock->clear();
     }
@@ -30,8 +33,12 @@ void RFNoC_TestComponent_i::constructor()
     /***********************************************************************************
      This is the RH constructor. All properties are properly initialized before this function is called 
     ***********************************************************************************/
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    // Grab the pointer to the specified block ID
     this->rfnocBlock = this->usrp->get_device3()->find_block_ctrl(this->blockID);
 
+    // Without this, there is no need to continue
     if (not this->rfnocBlock) {
         LOG_FATAL(RFNoC_TestComponent_i, "Unable to retrieve RF-NoC block with ID: " << this->blockID);
         throw std::exception();
@@ -39,28 +46,29 @@ void RFNoC_TestComponent_i::constructor()
         LOG_INFO(RFNoC_TestComponent_i, "Got the block: " << this->blockID);
     }
 
+    // Set the args initially
     setArgs(this->args);
 
+    // Register the property change listener
     this->addPropertyChangeListener("args", this, &RFNoC_TestComponent_i::argsChanged);
 }
 
 void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::SystemException)
 {
-    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Started");
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     bool wasStarted = this->_started;
 
     RFNoC_TestComponent_base::start();
 
+    // Push an initial SRI with this block ID
     if (not wasStarted) {
-        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Pushing SRI");
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Pushing SRI");
 
-        BULKIO::StreamSRI sri;
-
-        redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
+        redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(this->sri.keywords);
         tmp["RF-NoC_Block_ID"] = this->blockID;
 
-        this->dataShort_out->pushSRI(sri);
+        this->dataShort_out->pushSRI(this->sri);
 
         this->firstPass = true;
         this->secondPass = false;
@@ -280,7 +288,7 @@ void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::Syst
 ************************************************************************************************/
 int RFNoC_TestComponent_i::serviceFunction()
 {
-    LOG_DEBUG(RFNoC_TestComponent_i, "serviceFunction() example log message");
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Determine if the upstream component is also an RF-NoC Component
     if (this->firstPass) {
@@ -288,39 +296,41 @@ int RFNoC_TestComponent_i::serviceFunction()
         this->firstPass = false;
         this->secondPass = true;
 
-        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Getting active SRIs");
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Getting active SRIs");
 
         BULKIO::StreamSRISequence *SRIs = this->dataShort_in->activeSRIs();
 
         if (SRIs->length() == 0) {
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "No SRIs available");
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "No SRIs available");
             return NOOP;
         }
 
-        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Got the active SRIs, grabbing the first");
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Got the active SRIs, grabbing the first");
 
-        BULKIO::StreamSRI sri = SRIs->operator [](0);
+        BULKIO::StreamSRI upstreamSri = SRIs->operator [](0);
 
-        redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(sri.keywords);
+        redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(upstreamSri.keywords);
 
-        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Got the SRI, checking for keyword");
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Got the SRI, checking for keyword");
 
         if (tmp.contains("RF-NoC_Block_ID")) {
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Found RF-NoC_Block_ID keyword");
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Found RF-NoC_Block_ID keyword");
 
             this->upstreamBlockID = tmp["RF-NoC_Block_ID"].toString();
         } else {
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Did not find RF-NoC_Block_ID keyword");
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Did not find RF-NoC_Block_ID keyword");
         }
 
+        // Connect only if an upstream block ID was found
         if (this->upstreamBlockID != "") {
             try {
                 this->usrp->connect(this->upstreamBlockID, this->blockID);
             } catch(uhd::runtime_error &e) {
-                LOG_WARN(RFNoC_TestComponent_i, this->blockID << " failed to connect: " << this->upstreamBlockID << " -> " << this->blockID)
+                LOG_WARN(RFNoC_TestComponent_i, this->blockID << ":" << " failed to connect: " << this->upstreamBlockID << " -> " << this->blockID)
             }
         }
 
+        // Clean up the SRIs
         delete SRIs;
     } else if (this->secondPass) {
         // Clear the secondPass flag
@@ -328,13 +338,13 @@ int RFNoC_TestComponent_i::serviceFunction()
 
         // This is the first block in the chain, initialize the TX stream
         if (this->upstreamBlockID == "") {
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
 
             try {
                 this->usrp->set_tx_channel(this->blockID);
             } catch(uhd::runtime_error &e) {
-                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
-                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
+                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
+                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
             } catch(...) {
                 LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An unexpected exception occurred");
                 return FINISH;
@@ -352,13 +362,13 @@ int RFNoC_TestComponent_i::serviceFunction()
 
         // This is the last block in the stream, initialize the RX stream
         if (this->rfnocBlock->list_downstream_nodes().size() == 0) {
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
 
             try {
                 this->usrp->set_rx_channel(this->blockID);
             } catch(uhd::runtime_error &e) {
-                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
-                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
+                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
+                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
             } catch(...) {
                 LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An unexpected exception occurred");
                 return FINISH;
@@ -388,13 +398,13 @@ int RFNoC_TestComponent_i::serviceFunction()
 
             if (not block) {
                 if (inputStream.eos()) {
-                    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "EOS");
+                    LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOS");
                 }
 
                 return NOOP;
             }
 
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << block.size() << " samples");
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << block.size() << " samples");
 
             uhd::tx_metadata_t md;
             std::vector<std::complex<short> > out;
@@ -405,12 +415,12 @@ int RFNoC_TestComponent_i::serviceFunction()
             md.has_time_spec = true;
             md.time_spec = uhd::time_spec_t(timestamps.front().time.twsec, timestamps.front().time.tfsec);
 
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Output vector is of size: " << out.size());
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Output vector is of size: " << out.size());
 
             this->txStream->send(&out.front(), out.size(), md);
 
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
         }
 
         // Perform RX, if necessary
@@ -420,7 +430,7 @@ int RFNoC_TestComponent_i::serviceFunction()
 
             output.resize(5000);
 
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
 
             size_t num_rx_samps = this->rxStream->recv(&output.front(), output.size(), md, 1.0);
 
@@ -434,10 +444,10 @@ int RFNoC_TestComponent_i::serviceFunction()
                 return NOOP;
             }
 
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
 
             if (not this->outShortStream) {
-                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Created an output stream");
+                LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Created an output stream");
                 this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
                 this->outShortStream.complex(true);
             }
@@ -483,67 +493,14 @@ bool RFNoC_TestComponent_i::setArgs(std::vector<arg_struct> &newArgs)
     std::vector<size_t> invalidIndices;
 
     for (size_t i = 0; i < newArgs.size(); ++i) {
-        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << newArgs[i].id << "(" << newArgs[i].type << "): " << newArgs[i].value);
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << newArgs[i].id << ": " << newArgs[i].value);
 
         this->rfnocBlock->set_arg(newArgs[i].id, newArgs[i].value);
 
         if (this->rfnocBlock->get_arg(newArgs[i].id) != newArgs[i].value) {
-            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << newArgs[i].id << "(" << newArgs[i].type << ") to " << newArgs[i].value);
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << newArgs[i].id << " to " << newArgs[i].value);
             invalidIndices.push_back(i);
         }
-
-        /*std::stringstream ss;
-
-        ss << this->args[i].value;
-
-        switch (this->args[i].type) {
-            case "INT": {
-                int value;
-
-                ss >> value;
-
-                this->rfnocBlock->set_arg<int>(this->args[i].id, int(value));
-
-                if (this->rfnocBlock->get_arg<int>(this->args[i].id) != int(value)) {
-                    LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << this->args[i].id << "(" << this->args[i].type << ") to " << this->args[i].value);
-                    invalidIndices.push_back(i);
-                }
-                break;
-            }
-
-            case "DOUBLE": {
-                double value;
-
-                ss >> value;
-
-                this->rfnocBlock->set_arg<double>(this->args[i].id, double(value));
-
-                if (this->rfnocBlock->get_arg<double>(this->args[i].id) != double(value)) {
-                    LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << this->args[i].id << "(" << this->args[i].type << ") to " << this->args[i].value);
-                    invalidIndices.push_back(i);
-                }
-
-                break;
-            }
-
-            case "STRING": {
-                std::string value = this->args[i].value;
-
-                this->rfnocBlock->set_arg<>(this->args[i].id, int(value));
-
-                if (this->rfnocBlock->get_arg<int>(this->args[i].id) != int(value)) {
-                    LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << this->args[i].id << "(" << this->args[i].type << ") to " << this->args[i].value);
-                    invalidIndices.push_back(i);
-                }
-
-                break;
-            }
-
-            default: {
-                LOG_WARN(RFNoC_TestComponent_i, "argument type must be: INT, DOUBLE, STRING");
-                invalidIndices.push_back(i);
-            }
-        }*/
     }
 
     for (std::vector<size_t>::reverse_iterator i = invalidIndices.rbegin(); i != invalidIndices.rend(); ++i) {

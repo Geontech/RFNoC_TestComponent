@@ -32,6 +32,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
         uhd::rx_streamer::sptr rxStream;
         bool secondPass;
+        BULKIO::StreamSRI sri;
         uhd::tx_streamer::sptr txStream;
         std::string upstreamBlockID;
         uhd::usrp::multi_usrp::sptr usrp;

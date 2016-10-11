@@ -16,7 +16,6 @@ struct arg_struct {
     {
         id = "";
         value = "";
-        type = "INT";
     };
 
     static std::string getId() {
@@ -25,7 +24,6 @@ struct arg_struct {
 
     std::string id;
     std::string value;
-    std::string type;
 };
 
 inline bool operator>>= (const CORBA::Any& a, arg_struct& s) {
@@ -38,9 +36,6 @@ inline bool operator>>= (const CORBA::Any& a, arg_struct& s) {
     if (props.contains("args::value")) {
         if (!(props["args::value"] >>= s.value)) return false;
     }
-    if (props.contains("args::type")) {
-        if (!(props["args::type"] >>= s.type)) return false;
-    }
     return true;
 }
 
@@ -50,8 +45,6 @@ inline void operator<<= (CORBA::Any& a, const arg_struct& s) {
     props["args::id"] = s.id;
  
     props["args::value"] = s.value;
- 
-    props["args::type"] = s.type;
     a <<= props;
 }
 
@@ -59,8 +52,6 @@ inline bool operator== (const arg_struct& s1, const arg_struct& s2) {
     if (s1.id!=s2.id)
         return false;
     if (s1.value!=s2.value)
-        return false;
-    if (s1.type!=s2.type)
         return false;
     return true;
 }
