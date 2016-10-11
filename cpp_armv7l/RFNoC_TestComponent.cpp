@@ -383,13 +383,28 @@ int RFNoC_TestComponent_i::serviceFunction()
             if (not this->rxChannelInitialized) {
                 LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
 
-                this->usrp->set_rx_channel(this->blockID);
+                try {
+                    this->usrp->set_rx_channel(this->blockID);
+                } catch(uhd::runtime_error &e) {
+                    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
+                    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
+                } catch(...) {
+                    LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An unexpected exception occurred");
+                    return FINISH;
+                }
 
                 this->rxChannelInitialized = true;
 
                 uhd::stream_args_t stream_args("sc16", "sc16");
 
                 this->rxStream = this->usrp->get_rx_stream(stream_args);
+
+                uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_MORE);
+                stream_cmd.num_samps = 1000;
+                stream_cmd.stream_now = true;
+                stream_cmd.time_spec = uhd::time_spec_t();
+
+                this->rxStream->issue_stream_cmd(stream_cmd);
             }
 
             uhd::rx_metadata_t md;
@@ -397,7 +412,7 @@ int RFNoC_TestComponent_i::serviceFunction()
 
             output.resize(1000);
 
-            size_t num_rx_samps = this->rxStream->recv(output, output.size(), md);
+            size_t num_rx_samps = this->rxStream->recv(&output.front(), output.size(), md, 1.0);
 
             if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
                 LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Timeout while streaming");
@@ -408,6 +423,8 @@ int RFNoC_TestComponent_i::serviceFunction()
                 LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << md.strerror());
                 return NOOP;
             }
+
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
 
             if (not this->outShortStream) {
                 this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
