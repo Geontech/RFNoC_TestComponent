@@ -21,6 +21,9 @@ RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label
 
 RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
 {
+    if (this->rfnocBlock) {
+        this->rfnocBlock->clear();
+    }
 }
 
 void RFNoC_TestComponent_i::constructor()
@@ -324,7 +327,15 @@ int RFNoC_TestComponent_i::serviceFunction()
             if (not this->txChannelInitialized) {
                 LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
 
-                this->usrp->set_tx_channel(this->blockID);
+                try {
+                    this->usrp->set_tx_channel(this->blockID);
+                } catch(uhd::runtime_error &e) {
+                    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
+                    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
+                } catch(...) {
+                    LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An unexpected exception occurred");
+                    return FINISH;
+                }
 
                 this->txChannelInitialized = true;
 
