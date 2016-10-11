@@ -432,6 +432,7 @@ int RFNoC_TestComponent_i::serviceFunction()
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
 
             if (not this->outShortStream) {
+                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Created an output stream");
                 this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
             }
 
@@ -440,7 +441,11 @@ int RFNoC_TestComponent_i::serviceFunction()
             rxTime.twsec = md.time_spec.get_full_secs();
             rxTime.tfsec = md.time_spec.get_frac_secs();
 
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Writing to bulkio output");
+
             this->outShortStream.write(output.data(), num_rx_samps, rxTime);
+
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Wrote to output bulkio output");
         }
     }
 
