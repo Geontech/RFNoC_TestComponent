@@ -331,6 +331,11 @@ int RFNoC_TestComponent_i::serviceFunction()
                 uhd::stream_args_t stream_args("sc16", "sc16");
 
                 this->txStream = this->usrp->get_tx_stream(stream_args);
+
+                if (not this->txStream) {
+                    LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to create TX Streamer");
+                    return FINISH;
+                }
             }
 
             bulkio::InShortStream inputStream = this->dataShort_in->getCurrentStream(0.0);
@@ -358,7 +363,7 @@ int RFNoC_TestComponent_i::serviceFunction()
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Output vector is of size: " << out.size());
 
-            this->txStream->send(out, out.size(), md);
+            this->txStream->send(&out.front(), out.size(), md);
 
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
         }
