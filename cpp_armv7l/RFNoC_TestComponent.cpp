@@ -43,7 +43,7 @@ void RFNoC_TestComponent_i::constructor()
         LOG_FATAL(RFNoC_TestComponent_i, "Unable to retrieve RF-NoC block with ID: " << this->blockID);
         throw std::exception();
     } else {
-        LOG_INFO(RFNoC_TestComponent_i, "Got the block: " << this->blockID);
+        LOG_DEBUG(RFNoC_TestComponent_i, "Got the block: " << this->blockID);
     }
 
     // Set the args initially
@@ -466,7 +466,8 @@ int RFNoC_TestComponent_i::serviceFunction()
 
 void RFNoC_TestComponent_i::setUsrp(uhd::usrp::multi_usrp::sptr usrp)
 {
-    LOG_INFO(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+    LOG_DEBUG(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+
     this->usrp = usrp;
 
     if (not usrp or not usrp->is_device3()) {
