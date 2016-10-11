@@ -368,8 +368,8 @@ int RFNoC_TestComponent_i::serviceFunction()
 
             this->rxStream = this->usrp->get_rx_stream(stream_args);
 
-            uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_MORE);
-            stream_cmd.num_samps = 1000;
+            uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
+            stream_cmd.num_samps = 0;
             stream_cmd.stream_now = true;
             stream_cmd.time_spec = uhd::time_spec_t();
 
@@ -428,8 +428,6 @@ int RFNoC_TestComponent_i::serviceFunction()
                 LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << md.strerror());
                 return NOOP;
             }
-
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "RX Rate: " << this->usrp->get_rx_rate());
 
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
 
