@@ -431,6 +431,12 @@ int RFNoC_TestComponent_i::serviceFunction()
 
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
 
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "A");
+
+            not this->outShortStream;
+
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "B");
+
             if (not this->outShortStream) {
                 LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Created an output stream");
                 this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
