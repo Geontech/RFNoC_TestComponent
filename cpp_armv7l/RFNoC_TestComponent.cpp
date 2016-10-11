@@ -400,6 +400,11 @@ int RFNoC_TestComponent_i::serviceFunction()
             std::vector<short> out;
             out.assign(block.data(), block.data() + block.size());
 
+            std::list<bulkio::SampleTimestamp> timestamps = block.getTimestamps();
+
+            md.has_time_spec = true;
+            md.time_spec = uhd::time_spec_t(timestamps.front().time.twsec, timestamps.front().time.tfsec);
+
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Output vector is of size: " << out.size());
 
