@@ -24,6 +24,9 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         void argsChanged(const std::vector<arg_struct> *oldValue, const std::vector<arg_struct> *newValue);
 
     private:
+        bool setArgs(std::vector<arg_struct> &newArgs);
+
+    private:
         bool firstPass;
         bulkio::OutShortStream outShortStream;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;

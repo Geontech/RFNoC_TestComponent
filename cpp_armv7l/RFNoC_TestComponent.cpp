@@ -37,6 +37,8 @@ void RFNoC_TestComponent_i::constructor()
         LOG_INFO(RFNoC_TestComponent_i, "Got the block: " << this->blockID);
     }
 
+    setArgs(this->args);
+
     this->addPropertyChangeListener("args", this, &RFNoC_TestComponent_i::argsChanged);
 }
 
@@ -420,20 +422,28 @@ void RFNoC_TestComponent_i::setUsrp(uhd::usrp::multi_usrp::sptr usrp)
 
 void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> *oldValue, const std::vector<arg_struct> *newValue)
 {
+    if (not setArgs(this->args)) {
+        LOG_WARN(RFNoC_TestComponent_i, "Unable to set new arguments, reverting");
+        this->args = *oldValue;
+    }
+}
+
+bool RFNoC_TestComponent_i::setArgs(std::vector<arg_struct> &newArgs)
+{
     if (not this->rfnocBlock) {
         LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Unable to set new arguments, RF-NoC block is not set");
-        return;
+        return false;
     }
 
     std::vector<size_t> invalidIndices;
 
-    for (size_t i = 0; i < this->args.size(); ++i) {
-        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->args[i].id << "(" << this->args[i].type << "): " << this->args[i].value);
+    for (size_t i = 0; i < newArgs.size(); ++i) {
+        LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << newArgs[i].id << "(" << newArgs[i].type << "): " << newArgs[i].value);
 
-        this->rfnocBlock->set_arg(this->args[i].id, this->args[i].value);
+        this->rfnocBlock->set_arg(newArgs[i].id, newArgs[i].value);
 
-        if (this->rfnocBlock->get_arg(this->args[i].id) != this->args[i].value) {
-            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << this->args[i].id << "(" << this->args[i].type << ") to " << this->args[i].value);
+        if (this->rfnocBlock->get_arg(newArgs[i].id) != newArgs[i].value) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to set " << newArgs[i].id << "(" << newArgs[i].type << ") to " << newArgs[i].value);
             invalidIndices.push_back(i);
         }
 
@@ -494,4 +504,6 @@ void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> *oldValue,
     for (std::vector<size_t>::reverse_iterator i = invalidIndices.rbegin(); i != invalidIndices.rend(); ++i) {
         this->args.erase(this->args.begin() + *i);
     }
+
+    return true;
 }
