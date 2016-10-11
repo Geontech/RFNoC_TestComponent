@@ -397,8 +397,8 @@ int RFNoC_TestComponent_i::serviceFunction()
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << block.size() << " samples");
 
             uhd::tx_metadata_t md;
-            std::vector<short> out;
-            out.assign(block.data(), block.data() + block.size());
+            std::vector<std::complex<short> > out;
+            out.assign(block.cxdata(), block.cxdata() + block.cxsize());
 
             std::list<bulkio::SampleTimestamp> timestamps = block.getTimestamps();
 
