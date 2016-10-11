@@ -434,6 +434,8 @@ int RFNoC_TestComponent_i::serviceFunction()
             if (not this->outShortStream) {
                 LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Created an output stream");
                 this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
+            } else {
+                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Supposedly don't need to create an output stream");
             }
 
             BULKIO::PrecisionUTCTime rxTime;
