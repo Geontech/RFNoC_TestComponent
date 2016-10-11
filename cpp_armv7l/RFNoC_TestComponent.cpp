@@ -412,6 +412,8 @@ int RFNoC_TestComponent_i::serviceFunction()
 
             output.resize(1000);
 
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
+
             size_t num_rx_samps = this->rxStream->recv(&output.front(), output.size(), md, 1.0);
 
             if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
