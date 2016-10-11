@@ -411,7 +411,7 @@ int RFNoC_TestComponent_i::serviceFunction()
         // Perform RX, if necessary
         if (this->rxStream) {
             uhd::rx_metadata_t md;
-            std::vector<short> output;
+            std::vector<std::complex<short> > output;
 
             output.resize(1000);
 
