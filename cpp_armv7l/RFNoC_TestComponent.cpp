@@ -438,6 +438,8 @@ int RFNoC_TestComponent_i::serviceFunction()
             rxTime.tfsec = md.time_spec.get_frac_secs();
 
             this->outShortStream.write(output.data(), num_rx_samps, rxTime);
+        } else {
+            LOG_INFO(RFNoC_TestComponent_i, "THIS HAPPENED");
         }
     }
 
