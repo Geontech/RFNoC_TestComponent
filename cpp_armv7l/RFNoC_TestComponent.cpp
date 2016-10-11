@@ -14,8 +14,7 @@ PREPARE_LOGGING(RFNoC_TestComponent_i)
 RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label) :
     RFNoC_TestComponent_base(uuid, label),
     firstPass(true),
-    rxChannelInitialized(false),
-    txChannelInitialized(false)
+    secondPass(false)
 {
 }
 
@@ -64,6 +63,7 @@ void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::Syst
         this->dataShort_out->pushSRI(sri);
 
         this->firstPass = true;
+        this->secondPass = false;
     }
 }
 
@@ -284,8 +284,9 @@ int RFNoC_TestComponent_i::serviceFunction()
 
     // Determine if the upstream component is also an RF-NoC Component
     if (this->firstPass) {
-        // Clear the firstPass flag
+        // Clear the firstPass flag and set the secondPass flag
         this->firstPass = false;
+        this->secondPass = true;
 
         LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Getting active SRIs");
 
@@ -321,34 +322,62 @@ int RFNoC_TestComponent_i::serviceFunction()
         }
 
         delete SRIs;
-    } else {
-        // This is the first block in the chain
+    } else if (this->secondPass) {
+        // Clear the secondPass flag
+        this->secondPass = false;
+
+        // This is the first block in the chain, initialize the TX stream
         if (this->upstreamBlockID == "") {
-            if (not this->txChannelInitialized) {
-                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
 
-                try {
-                    this->usrp->set_tx_channel(this->blockID);
-                } catch(uhd::runtime_error &e) {
-                    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
-                    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
-                } catch(...) {
-                    LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An unexpected exception occurred");
-                    return FINISH;
-                }
-
-                this->txChannelInitialized = true;
-
-                uhd::stream_args_t stream_args("sc16", "sc16");
-
-                this->txStream = this->usrp->get_tx_stream(stream_args);
-
-                if (not this->txStream) {
-                    LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to create TX Streamer");
-                    return FINISH;
-                }
+            try {
+                this->usrp->set_tx_channel(this->blockID);
+            } catch(uhd::runtime_error &e) {
+                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
+                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
+            } catch(...) {
+                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An unexpected exception occurred");
+                return FINISH;
             }
 
+            uhd::stream_args_t stream_args("sc16", "sc16");
+
+            this->txStream = this->usrp->get_tx_stream(stream_args);
+
+            if (not this->txStream) {
+                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to create TX Streamer");
+                return FINISH;
+            }
+        }
+
+        // This is the last block in the stream, initialize the RX stream
+        if (this->rfnocBlock->list_downstream_nodes().size() == 0) {
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
+
+            try {
+                this->usrp->set_rx_channel(this->blockID);
+            } catch(uhd::runtime_error &e) {
+                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
+                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
+            } catch(...) {
+                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An unexpected exception occurred");
+                return FINISH;
+            }
+
+            uhd::stream_args_t stream_args("sc16", "sc16");
+
+            this->rxStream = this->usrp->get_rx_stream(stream_args);
+
+            uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_MORE);
+            stream_cmd.num_samps = 1000;
+            stream_cmd.stream_now = true;
+            stream_cmd.time_spec = uhd::time_spec_t();
+
+            this->rxStream->issue_stream_cmd(stream_cmd);
+        }
+    } else {
+        // Perform TX, if necessary
+        if (this->txStream) {
             bulkio::InShortStream inputStream = this->dataShort_in->getCurrentStream(0.0);
 
             if (not inputStream) {
@@ -379,34 +408,8 @@ int RFNoC_TestComponent_i::serviceFunction()
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
         }
 
-        if (this->rfnocBlock->list_downstream_nodes().size() == 0){
-            if (not this->rxChannelInitialized) {
-                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
-
-                try {
-                    this->usrp->set_rx_channel(this->blockID);
-                } catch(uhd::runtime_error &e) {
-                    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
-                    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
-                } catch(...) {
-                    LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An unexpected exception occurred");
-                    return FINISH;
-                }
-
-                this->rxChannelInitialized = true;
-
-                uhd::stream_args_t stream_args("sc16", "sc16");
-
-                this->rxStream = this->usrp->get_rx_stream(stream_args);
-
-                uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_MORE);
-                stream_cmd.num_samps = 1000;
-                stream_cmd.stream_now = true;
-                stream_cmd.time_spec = uhd::time_spec_t();
-
-                this->rxStream->issue_stream_cmd(stream_cmd);
-            }
-
+        // Perform RX, if necessary
+        if (this->rxStream) {
             uhd::rx_metadata_t md;
             std::vector<short> output;
 
@@ -438,8 +441,6 @@ int RFNoC_TestComponent_i::serviceFunction()
             rxTime.tfsec = md.time_spec.get_frac_secs();
 
             this->outShortStream.write(output.data(), num_rx_samps, rxTime);
-        } else {
-            LOG_INFO(RFNoC_TestComponent_i, "THIS HAPPENED");
         }
     }
 
