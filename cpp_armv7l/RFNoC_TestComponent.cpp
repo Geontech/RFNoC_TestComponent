@@ -429,20 +429,14 @@ int RFNoC_TestComponent_i::serviceFunction()
                 return NOOP;
             }
 
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "RX Rate: " << this->usrp->get_rx_rate());
+
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
-
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "A");
-
-            not this->outShortStream;
-
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "B");
 
             if (not this->outShortStream) {
                 LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Created an output stream");
                 this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
                 this->outShortStream.complex(true);
-            } else {
-                LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Supposedly don't need to create an output stream");
             }
 
             BULKIO::PrecisionUTCTime rxTime;
@@ -450,11 +444,7 @@ int RFNoC_TestComponent_i::serviceFunction()
             rxTime.twsec = md.time_spec.get_full_secs();
             rxTime.tfsec = md.time_spec.get_frac_secs();
 
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Writing to bulkio output");
-
             this->outShortStream.write(output.data(), num_rx_samps, rxTime);
-
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Wrote to output bulkio output");
         }
     }
 
