@@ -418,7 +418,7 @@ int RFNoC_TestComponent_i::serviceFunction()
             uhd::rx_metadata_t md;
             std::vector<std::complex<short> > output;
 
-            output.resize(1000);
+            output.resize(5000);
 
             LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
 
