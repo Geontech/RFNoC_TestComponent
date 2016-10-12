@@ -21,7 +21,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         void setUsrp(uhd::usrp::multi_usrp::sptr usrp);
 
     private:
-        void argsChanged(const std::vector<arg_struct> *oldValue, const std::vector<arg_struct> *newValue);
+        void argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue);
 
     private:
         bool setArgs(std::vector<arg_struct> &newArgs);
