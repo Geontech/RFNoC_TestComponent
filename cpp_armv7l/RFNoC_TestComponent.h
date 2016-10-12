@@ -28,6 +28,8 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
 
     private:
         bool firstPass;
+        std::string originalRxChannel;
+        std::string originalTxChannel;
         bulkio::OutShortStream outShortStream;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
         uhd::rx_streamer::sptr rxStream;

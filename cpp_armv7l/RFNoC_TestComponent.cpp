@@ -34,6 +34,23 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
 
         this->rxStream->issue_stream_cmd(streamCmd);
     }
+
+    // Reset the channel definitions
+    if (not this->originalRxChannel.empty()) {
+        try {
+            this->usrp->set_rx_channel(this->originalRxChannel);
+        } catch(...) {
+            LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An error occurred while trying to reset the RX channel");
+        }
+    }
+
+    if (not this->originalTxChannel.empty()) {
+        try {
+            this->usrp->set_tx_channel(this->originalTxChannel);
+        } catch(...) {
+            LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An error occurred while trying to reset the TX channel");
+        }
+    }
 }
 
 void RFNoC_TestComponent_i::constructor()
@@ -137,6 +154,10 @@ int RFNoC_TestComponent_i::serviceFunction()
         if (this->upstreamBlockID == "") {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
 
+            this->originalTxChannel = this->usrp->get_tx_channel_id(0).get();
+
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Original TX Channel: " << this->originalTxChannel);
+
             try {
                 this->usrp->set_tx_channel(this->blockID);
             } catch(uhd::runtime_error &e) {
@@ -160,6 +181,10 @@ int RFNoC_TestComponent_i::serviceFunction()
         // This is the last block in the stream, initialize the RX stream
         if (this->rfnocBlock->list_downstream_nodes().size() == 0) {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
+
+            this->originalRxChannel = this->usrp->get_rx_channel_id(0).get();
+
+            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Original RX Channel: " << this->originalRxChannel);
 
             try {
                 this->usrp->set_rx_channel(this->blockID);
