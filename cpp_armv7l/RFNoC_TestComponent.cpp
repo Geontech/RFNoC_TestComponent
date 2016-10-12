@@ -192,10 +192,17 @@ int RFNoC_TestComponent_i::serviceFunction()
             }
 
             bulkio::ShortDataBlock block = inputStream.read();
+            uhd::tx_metadata_t md;
 
             if (not block) {
                 if (inputStream.eos()) {
                     LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOS");
+
+                    // Propagate the EOS to the RF-NoC Block
+                    md.end_of_burst = true;
+
+                    std::vector<std::complex<short> > empty;
+                    this->txStream->send(&empty.front(), empty.size(), md);
                 }
 
                 return NOOP;
@@ -203,7 +210,6 @@ int RFNoC_TestComponent_i::serviceFunction()
 
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << block.size() << " samples");
 
-            uhd::tx_metadata_t md;
             std::vector<std::complex<short> > out;
             out.assign(block.cxdata(), block.cxdata() + block.cxsize());
 
@@ -218,6 +224,16 @@ int RFNoC_TestComponent_i::serviceFunction()
             this->txStream->send(&out.front(), out.size(), md);
 
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
+
+            if (inputStream.eos()) {
+                LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOS");
+
+                // Propagate the EOS to the RF-NoC Block
+                md.end_of_burst = true;
+
+                std::vector<std::complex<short> > empty;
+                this->txStream->send(&empty.front(), empty.size(), md);
+            }
         }
 
         // Perform RX, if necessary
@@ -255,6 +271,12 @@ int RFNoC_TestComponent_i::serviceFunction()
             rxTime.tfsec = md.time_spec.get_frac_secs();
 
             this->outShortStream.write(output.data(), num_rx_samps, rxTime);
+
+            if (md.end_of_burst) {
+                LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOB");
+
+                this->outShortStream.close();
+            }
         }
     }
 
