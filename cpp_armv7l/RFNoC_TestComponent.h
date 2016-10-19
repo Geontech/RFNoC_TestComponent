@@ -4,7 +4,8 @@
 #include "RFNoC_TestComponent_base.h"
 
 #include <uhd/rfnoc/block_ctrl.hpp>
-#include <uhd/usrp/multi_usrp.hpp>
+#include <uhd/rfnoc/graph.hpp>
+#include <uhd/device3.hpp>
 
 class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
 {
@@ -18,12 +19,14 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         void start() throw (CF::Resource::StartError, CORBA::SystemException);
         int serviceFunction();
 
-        void setUsrp(uhd::usrp::multi_usrp::sptr usrp);
+        void setUsrp(uhd::device3::sptr usrp);
 
     private:
         void argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue);
 
     private:
+        void printTree();
+
         bool setArgs(std::vector<arg_struct> &newArgs);
 
     private:
@@ -32,12 +35,13 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         std::string originalTxChannel;
         bulkio::OutShortStream outShortStream;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
+        uhd::rfnoc::graph::sptr rxGraph;
         uhd::rx_streamer::sptr rxStream;
         bool secondPass;
         BULKIO::StreamSRI sri;
         uhd::tx_streamer::sptr txStream;
         std::string upstreamBlockID;
-        uhd::usrp::multi_usrp::sptr usrp;
+        uhd::device3::sptr usrp;
 };
 
 #endif // RFNOC_TESTCOMPONENT_I_IMPL_H

@@ -4,7 +4,7 @@
 
 #include "RFNoC_TestComponent.h"
 
-#include <uhd/usrp/multi_usrp.hpp>
+#include <uhd/device3.hpp>
 
 RFNoC_TestComponent_i *resourcePtr;
 
@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 }
 
 extern "C" {
-    Resource_impl* construct(int argc, char* argv[], Device_impl* parentDevice, uhd::usrp::multi_usrp::sptr usrp) {
+    Resource_impl* construct(int argc, char* argv[], Device_impl* parentDevice, uhd::device3::sptr usrp) {
 
         struct sigaction sa;
         sa.sa_handler = signal_catcher;

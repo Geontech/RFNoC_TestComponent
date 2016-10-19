@@ -36,7 +36,7 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
     }
 
     // Reset the channel definitions
-    if (not this->originalRxChannel.empty()) {
+    /*if (not this->originalRxChannel.empty()) {
         try {
             this->usrp->set_rx_channel(this->originalRxChannel);
         } catch(...) {
@@ -50,7 +50,7 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
         } catch(...) {
             LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An error occurred while trying to reset the TX channel");
         }
-    }
+    }*/
 }
 
 void RFNoC_TestComponent_i::constructor()
@@ -61,7 +61,7 @@ void RFNoC_TestComponent_i::constructor()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Grab the pointer to the specified block ID
-    this->rfnocBlock = this->usrp->get_device3()->find_block_ctrl(this->blockID);
+    this->rfnocBlock = this->usrp->find_block_ctrl(this->blockID);
 
     // Without this, there is no need to continue
     if (not this->rfnocBlock) {
@@ -138,7 +138,7 @@ int RFNoC_TestComponent_i::serviceFunction()
         // Connect only if an upstream block ID was found
         if (this->upstreamBlockID != "") {
             try {
-                this->usrp->connect(this->upstreamBlockID, this->blockID);
+                this->rxGraph->connect(this->upstreamBlockID, this->blockID);
             } catch(uhd::runtime_error &e) {
                 LOG_WARN(RFNoC_TestComponent_i, this->blockID << ":" << " failed to connect: " << this->upstreamBlockID << " -> " << this->blockID)
             }
@@ -151,7 +151,7 @@ int RFNoC_TestComponent_i::serviceFunction()
         this->secondPass = false;
 
         // This is the first block in the chain, initialize the TX stream
-        if (this->upstreamBlockID == "") {
+        /*if (this->upstreamBlockID == "") {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
 
             this->originalTxChannel = this->usrp->get_tx_channel_id(0).get();
@@ -176,11 +176,13 @@ int RFNoC_TestComponent_i::serviceFunction()
                 LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to create TX Streamer");
                 return FINISH;
             }
-        }
+        }*/
 
         // This is the last block in the stream, initialize the RX stream
-        if (this->rfnocBlock->list_downstream_nodes().size() == 0) {
+        /*if (this->rfnocBlock->list_downstream_nodes().size() == 0) {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
+
+            uhd::property_tree::sptr tree = this->usrp->get_device3()->get_tree();
 
             this->originalRxChannel = this->usrp->get_rx_channel_id(0).get();
 
@@ -206,7 +208,7 @@ int RFNoC_TestComponent_i::serviceFunction()
             stream_cmd.time_spec = uhd::time_spec_t();
 
             this->rxStream->issue_stream_cmd(stream_cmd);
-        }
+        }*/
     } else {
         // Perform TX, if necessary
         if (this->txStream) {
@@ -308,16 +310,18 @@ int RFNoC_TestComponent_i::serviceFunction()
     return NORMAL;
 }
 
-void RFNoC_TestComponent_i::setUsrp(uhd::usrp::multi_usrp::sptr usrp)
+void RFNoC_TestComponent_i::setUsrp(uhd::device3::sptr usrp)
 {
     LOG_DEBUG(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
 
     this->usrp = usrp;
 
-    if (not usrp or not usrp->is_device3()) {
+    if (not usrp) {
         LOG_FATAL(RFNoC_TestComponent_i, "Received a USRP which is not RF-NoC compatible.");
         throw std::exception();
     }
+
+    this->rxGraph = this->usrp->create_graph("default");
 }
 
 void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue)
