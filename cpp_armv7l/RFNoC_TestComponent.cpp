@@ -61,7 +61,7 @@ void RFNoC_TestComponent_i::constructor()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Grab the pointer to the specified block ID
-    this->rfnocBlock = this->usrp->find_block_ctrl(this->blockID);
+    this->rfnocBlock = this->usrp->get_block_ctrl<uhd::rfnoc::block_ctrl_base>(this->blockID);
 
     // Without this, there is no need to continue
     if (not this->rfnocBlock) {
