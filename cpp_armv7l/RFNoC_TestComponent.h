@@ -7,6 +7,8 @@
 #include <uhd/rfnoc/graph.hpp>
 #include <uhd/device3.hpp>
 
+#include "BlockID.h"
+
 class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
 {
     ENABLE_LOGGING
@@ -19,6 +21,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         void start() throw (CF::Resource::StartError, CORBA::SystemException);
         int serviceFunction();
 
+        void setBlockIDCallback(blockIDCallback cb);
         void setUsrp(uhd::device3::sptr usrp);
 
     private:
@@ -30,6 +33,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         bool setArgs(std::vector<arg_struct> &newArgs);
 
     private:
+        blockIDCallback blockIDChange;
         bool firstPass;
         std::string originalRxChannel;
         std::string originalTxChannel;

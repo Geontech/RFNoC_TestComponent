@@ -13,6 +13,7 @@ PREPARE_LOGGING(RFNoC_TestComponent_i)
 
 RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label) :
     RFNoC_TestComponent_base(uuid, label),
+    blockIDChange(NULL),
     firstPass(true),
     secondPass(false)
 {
@@ -76,6 +77,11 @@ void RFNoC_TestComponent_i::constructor()
 
     // Register the property change listener
     this->addPropertyListener(this->args, this, &RFNoC_TestComponent_i::argsChanged);
+
+    // Alert the persona of the block ID
+    if (this->blockIDChange) {
+        this->blockIDChange(this->_identifier, this->blockID);
+    }
 }
 
 void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::SystemException)
@@ -308,6 +314,11 @@ int RFNoC_TestComponent_i::serviceFunction()
     }
 
     return NORMAL;
+}
+
+void RFNoC_TestComponent_i::setBlockIDCallback(blockIDCallback cb)
+{
+    this->blockIDChange = cb;
 }
 
 void RFNoC_TestComponent_i::setUsrp(uhd::device3::sptr usrp)

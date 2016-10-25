@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 }
 
 extern "C" {
-    Resource_impl* construct(int argc, char* argv[], Device_impl* parentDevice, uhd::device3::sptr usrp) {
+    Resource_impl* construct(int argc, char* argv[], Device_impl* parentDevice, uhd::device3::sptr usrp, blockIDCallback cb) {
 
         struct sigaction sa;
         sa.sa_handler = signal_catcher;
@@ -45,6 +45,7 @@ extern "C" {
         //         resourcePtr->setSharedAPI(sharedAPI);
         //resourcePtr->setParentDevice(parentDevice);
         resourcePtr->setUsrp(usrp);
+        resourcePtr->setBlockIDCallback(cb);
 
         return resourcePtr;
     }
