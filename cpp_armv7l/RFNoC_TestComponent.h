@@ -28,23 +28,15 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         void argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue);
 
     private:
-        void printTree();
-
         bool setArgs(std::vector<arg_struct> &newArgs);
 
     private:
         blockIDCallback blockIDChange;
-        bool firstPass;
-        std::string originalRxChannel;
-        std::string originalTxChannel;
         bulkio::OutShortStream outShortStream;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
-        uhd::rfnoc::graph::sptr rxGraph;
         uhd::rx_streamer::sptr rxStream;
-        bool secondPass;
         BULKIO::StreamSRI sri;
         uhd::tx_streamer::sptr txStream;
-        std::string upstreamBlockID;
         uhd::device3::sptr usrp;
 };
 

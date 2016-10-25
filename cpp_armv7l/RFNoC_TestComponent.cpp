@@ -13,9 +13,7 @@ PREPARE_LOGGING(RFNoC_TestComponent_i)
 
 RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label) :
     RFNoC_TestComponent_base(uuid, label),
-    blockIDChange(NULL),
-    firstPass(true),
-    secondPass(false)
+    blockIDChange(NULL)
 {
     LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
 }
@@ -100,9 +98,6 @@ void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::Syst
         tmp["RF-NoC_Block_ID"] = this->blockID;
 
         this->dataShort_out->pushSRI(this->sri);
-
-        this->firstPass = true;
-        this->secondPass = false;
     }
 }
 
@@ -111,7 +106,7 @@ int RFNoC_TestComponent_i::serviceFunction()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Determine if the upstream component is also an RF-NoC Component
-    if (this->firstPass) {
+    /*if (this->firstPass) {
         // Clear the firstPass flag and set the secondPass flag
         this->firstPass = false;
         this->secondPass = true;
@@ -157,7 +152,7 @@ int RFNoC_TestComponent_i::serviceFunction()
         this->secondPass = false;
 
         // This is the first block in the chain, initialize the TX stream
-        /*if (this->upstreamBlockID == "") {
+        if (this->upstreamBlockID == "") {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
 
             this->originalTxChannel = this->usrp->get_tx_channel_id(0).get();
@@ -214,7 +209,7 @@ int RFNoC_TestComponent_i::serviceFunction()
             stream_cmd.time_spec = uhd::time_spec_t();
 
             this->rxStream->issue_stream_cmd(stream_cmd);
-        }*/
+        }
     } else {
         // Perform TX, if necessary
         if (this->txStream) {
@@ -311,7 +306,7 @@ int RFNoC_TestComponent_i::serviceFunction()
                 this->outShortStream.close();
             }
         }
-    }
+    }*/
 
     return NORMAL;
 }
@@ -332,7 +327,7 @@ void RFNoC_TestComponent_i::setUsrp(uhd::device3::sptr usrp)
         throw std::exception();
     }
 
-    this->rxGraph = this->usrp->create_graph("default");
+    //this->rxGraph = this->usrp->create_graph("default");
 }
 
 void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue)
