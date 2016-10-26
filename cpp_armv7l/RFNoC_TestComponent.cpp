@@ -131,7 +131,7 @@ int RFNoC_TestComponent_i::serviceFunction()
         uhd::rx_metadata_t md;
         std::vector<std::complex<short> > output;
 
-        output.resize(5000);
+        output.resize(this->spp);
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
 
@@ -201,11 +201,9 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         streamer_args["block_id"] = this->blockID;
 
         // Get the spp from the block
-        size_t spp = 1024;
+        this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 1024);
 
-        this->rfnocBlock->get_args().cast<size_t>("spp", spp);
-
-        streamer_args["spp"] = boost::lexical_cast<std::string>(spp);
+        streamer_args["spp"] = boost::lexical_cast<std::string>(this->spp);
 
         stream_args.args = streamer_args;
 
@@ -251,11 +249,9 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
         streamer_args["block_id"] = this->blockID;
 
         // Get the spp from the block
-        size_t spp = 1024;
+        this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 1024);
 
-        this->rfnocBlock->get_args().cast<size_t>("spp", spp);
-
-        streamer_args["spp"] = boost::lexical_cast<std::string>(spp);
+        streamer_args["spp"] = boost::lexical_cast<std::string>(this->spp);
 
         stream_args.args = streamer_args;
 

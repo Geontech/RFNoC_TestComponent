@@ -36,6 +36,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         bulkio::OutShortStream outShortStream;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
         uhd::rx_streamer::sptr rxStream;
+        size_t spp;
         BULKIO::StreamSRI sri;
         uhd::tx_streamer::sptr txStream;
         uhd::device3::sptr usrp;
