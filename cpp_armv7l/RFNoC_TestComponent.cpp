@@ -199,7 +199,13 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         uhd::device_addr_t streamer_args;
 
         streamer_args["block_id"] = this->blockID;
-        streamer_args["spp"] = "1024";
+
+        // Get the spp from the block
+        size_t spp = 1024;
+
+        this->rfnocBlock->get_args().cast<size_t>("spp", spp);
+
+        streamer_args["spp"] = boost::lexical_cast<std::string>(spp);
 
         stream_args.args = streamer_args;
 
@@ -243,7 +249,13 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
         uhd::device_addr_t streamer_args;
 
         streamer_args["block_id"] = this->blockID;
-        streamer_args["spp"] = "1024";
+
+        // Get the spp from the block
+        size_t spp = 1024;
+
+        this->rfnocBlock->get_args().cast<size_t>("spp", spp);
+
+        streamer_args["spp"] = boost::lexical_cast<std::string>(spp);
 
         stream_args.args = streamer_args;
 
