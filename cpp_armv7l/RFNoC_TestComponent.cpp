@@ -13,7 +13,8 @@ PREPARE_LOGGING(RFNoC_TestComponent_i)
 
 RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label) :
     RFNoC_TestComponent_base(uuid, label),
-    blockIDChange(NULL)
+    blockIDChange(NULL),
+    spp(1024)
 {
     LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
 }
@@ -180,12 +181,14 @@ int RFNoC_TestComponent_i::serviceFunction()
 
 void RFNoC_TestComponent_i::setBlockIDCallback(blockIDCallback cb)
 {
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
     this->blockIDChange = cb;
 }
 
 void RFNoC_TestComponent_i::setRxStreamer(bool enable)
 {
-    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     if (enable) {
         if (this->rxStream) {
@@ -233,7 +236,7 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
 
 void RFNoC_TestComponent_i::setTxStreamer(bool enable)
 {
-    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     if (enable) {
         if (this->txStream) {
@@ -270,7 +273,7 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
 
 void RFNoC_TestComponent_i::setUsrp(uhd::device3::sptr usrp)
 {
-    LOG_DEBUG(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     this->usrp = usrp;
 
@@ -282,6 +285,8 @@ void RFNoC_TestComponent_i::setUsrp(uhd::device3::sptr usrp)
 
 void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue)
 {
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
     if (not setArgs(this->args)) {
         LOG_WARN(RFNoC_TestComponent_i, "Unable to set new arguments, reverting");
         this->args = oldValue;
@@ -290,6 +295,8 @@ void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> &oldValue,
 
 bool RFNoC_TestComponent_i::setArgs(std::vector<arg_struct> &newArgs)
 {
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
     if (not this->rfnocBlock) {
         LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Unable to set new arguments, RF-NoC block is not set");
         return false;
