@@ -193,11 +193,15 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
             return;
         }
 
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempting to set RX streamer");
+
         uhd::stream_args_t stream_args("sc16", "sc16");
         uhd::device_addr_t streamer_args;
 
         streamer_args["block_id"] = this->blockID;
         streamer_args["spp"] = "1024";
+
+        stream_args.args = streamer_args;
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
 
@@ -233,11 +237,15 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
             return;
         }
 
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempting to set TX streamer");
+
         uhd::stream_args_t stream_args("sc16", "sc16");
         uhd::device_addr_t streamer_args;
 
         streamer_args["block_id"] = this->blockID;
         streamer_args["spp"] = "1024";
+
+        stream_args.args = streamer_args;
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
 
