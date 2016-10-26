@@ -316,6 +316,16 @@ void RFNoC_TestComponent_i::setBlockIDCallback(blockIDCallback cb)
     this->blockIDChange = cb;
 }
 
+void RFNoC_TestComponent_i::setRxStreamer(bool enable)
+{
+    LOG_INFO(RFNoC_TestComponent_i, this->_identifier << ": Set RX streamer: " << enable);
+}
+
+void RFNoC_TestComponent_i::setTxStreamer(bool enable)
+{
+    LOG_INFO(RFNoC_TestComponent_i, this->_identifier << ": Set TX streamer: " << enable);
+}
+
 void RFNoC_TestComponent_i::setUsrp(uhd::device3::sptr usrp)
 {
     LOG_DEBUG(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);

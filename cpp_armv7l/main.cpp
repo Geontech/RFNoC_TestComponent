@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 }
 
 extern "C" {
-    Resource_impl* construct(int argc, char* argv[], Device_impl* parentDevice, uhd::device3::sptr usrp, blockIDCallback cb) {
+    Resource_impl* construct(int argc, char* argv[], Device_impl* parentDevice, uhd::device3::sptr usrp, blockIDCallback cb, setSetStreamerCallback setSetRxStreamerCb, setSetStreamerCallback setSetTxStreamerCb) {
 
         struct sigaction sa;
         sa.sa_handler = signal_catcher;
@@ -46,6 +46,8 @@ extern "C" {
         //resourcePtr->setParentDevice(parentDevice);
         resourcePtr->setUsrp(usrp);
         resourcePtr->setBlockIDCallback(cb);
+        setSetRxStreamerCb(resourcePtr->_identifier, boost::bind(&RFNoC_TestComponent_i::setRxStreamer, resourcePtr, _1));
+        setSetTxStreamerCb(resourcePtr->_identifier, boost::bind(&RFNoC_TestComponent_i::setTxStreamer, resourcePtr, _1));
 
         return resourcePtr;
     }

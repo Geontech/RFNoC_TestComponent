@@ -7,7 +7,7 @@
 #include <uhd/rfnoc/graph.hpp>
 #include <uhd/device3.hpp>
 
-#include "BlockID.h"
+#include "RFNoC_Component.h"
 
 class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
 {
@@ -22,6 +22,8 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         int serviceFunction();
 
         void setBlockIDCallback(blockIDCallback cb);
+        void setRxStreamer(bool enable);
+        void setTxStreamer(bool enable);
         void setUsrp(uhd::device3::sptr usrp);
 
     private:
