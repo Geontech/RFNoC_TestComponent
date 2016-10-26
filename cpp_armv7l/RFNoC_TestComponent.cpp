@@ -33,23 +33,6 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
 
         this->rxStream->issue_stream_cmd(streamCmd);
     }
-
-    // Reset the channel definitions
-    /*if (not this->originalRxChannel.empty()) {
-        try {
-            this->usrp->set_rx_channel(this->originalRxChannel);
-        } catch(...) {
-            LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An error occurred while trying to reset the RX channel");
-        }
-    }
-
-    if (not this->originalTxChannel.empty()) {
-        try {
-            this->usrp->set_tx_channel(this->originalTxChannel);
-        } catch(...) {
-            LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An error occurred while trying to reset the TX channel");
-        }
-    }*/
 }
 
 void RFNoC_TestComponent_i::constructor()
@@ -82,177 +65,24 @@ void RFNoC_TestComponent_i::constructor()
     }
 }
 
-void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::SystemException)
-{
-    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
-
-    bool wasStarted = this->_started;
-
-    RFNoC_TestComponent_base::start();
-
-    // Push an initial SRI with this block ID
-    if (not wasStarted) {
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Pushing SRI");
-
-        redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(this->sri.keywords);
-        tmp["RF-NoC_Block_ID"] = this->blockID;
-
-        this->dataShort_out->pushSRI(this->sri);
-    }
-}
-
 int RFNoC_TestComponent_i::serviceFunction()
 {
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
-    // Determine if the upstream component is also an RF-NoC Component
-    /*if (this->firstPass) {
-        // Clear the firstPass flag and set the secondPass flag
-        this->firstPass = false;
-        this->secondPass = true;
+    bool dataTransceived = false;
 
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Getting active SRIs");
+    // Perform TX, if necessary
+    if (this->txStream) {
+        bulkio::InShortStream inputStream = this->dataShort_in->getCurrentStream(0.0);
 
-        BULKIO::StreamSRISequence *SRIs = this->dataShort_in->activeSRIs();
-
-        if (SRIs->length() == 0) {
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "No SRIs available");
+        if (not inputStream) {
             return NOOP;
         }
 
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Got the active SRIs, grabbing the first");
+        bulkio::ShortDataBlock block = inputStream.read();
+        uhd::tx_metadata_t md;
 
-        BULKIO::StreamSRI upstreamSri = SRIs->operator [](0);
-
-        redhawk::PropertyMap &tmp = redhawk::PropertyMap::cast(upstreamSri.keywords);
-
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Got the SRI, checking for keyword");
-
-        if (tmp.contains("RF-NoC_Block_ID")) {
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Found RF-NoC_Block_ID keyword");
-
-            this->upstreamBlockID = tmp["RF-NoC_Block_ID"].toString();
-        } else {
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Did not find RF-NoC_Block_ID keyword");
-        }
-
-        // Connect only if an upstream block ID was found
-        if (this->upstreamBlockID != "") {
-            try {
-                this->rxGraph->connect(this->upstreamBlockID, this->blockID);
-            } catch(uhd::runtime_error &e) {
-                LOG_WARN(RFNoC_TestComponent_i, this->blockID << ":" << " failed to connect: " << this->upstreamBlockID << " -> " << this->blockID)
-            }
-        }
-
-        // Clean up the SRIs
-        delete SRIs;
-    } else if (this->secondPass) {
-        // Clear the secondPass flag
-        this->secondPass = false;
-
-        // This is the first block in the chain, initialize the TX stream
-        if (this->upstreamBlockID == "") {
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Host -> " << this->blockID);
-
-            this->originalTxChannel = this->usrp->get_tx_channel_id(0).get();
-
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Original TX Channel: " << this->originalTxChannel);
-
-            try {
-                this->usrp->set_tx_channel(this->blockID);
-            } catch(uhd::runtime_error &e) {
-                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
-                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
-            } catch(...) {
-                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An unexpected exception occurred");
-                return FINISH;
-            }
-
-            uhd::stream_args_t stream_args("sc16", "sc16");
-
-            this->txStream = this->usrp->get_tx_stream(stream_args);
-
-            if (not this->txStream) {
-                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to create TX Streamer");
-                return FINISH;
-            }
-        }*/
-
-        // This is the last block in the stream, initialize the RX stream
-        /*if (this->rfnocBlock->list_downstream_nodes().size() == 0) {
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << this->blockID << " -> Host");
-
-            uhd::property_tree::sptr tree = this->usrp->get_device3()->get_tree();
-
-            this->originalRxChannel = this->usrp->get_rx_channel_id(0).get();
-
-            LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "Original RX Channel: " << this->originalRxChannel);
-
-            try {
-                this->usrp->set_rx_channel(this->blockID);
-            } catch(uhd::runtime_error &e) {
-                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Error Code: " << e.code());
-                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Error Msg: " << e.what());
-            } catch(...) {
-                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "An unexpected exception occurred");
-                return FINISH;
-            }
-
-            uhd::stream_args_t stream_args("sc16", "sc16");
-
-            this->rxStream = this->usrp->get_rx_stream(stream_args);
-
-            uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
-            stream_cmd.num_samps = 0;
-            stream_cmd.stream_now = true;
-            stream_cmd.time_spec = uhd::time_spec_t();
-
-            this->rxStream->issue_stream_cmd(stream_cmd);
-        }
-    } else {
-        // Perform TX, if necessary
-        if (this->txStream) {
-            bulkio::InShortStream inputStream = this->dataShort_in->getCurrentStream(0.0);
-
-            if (not inputStream) {
-                return NOOP;
-            }
-
-            bulkio::ShortDataBlock block = inputStream.read();
-            uhd::tx_metadata_t md;
-
-            if (not block) {
-                if (inputStream.eos()) {
-                    LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOS");
-
-                    // Propagate the EOS to the RF-NoC Block
-                    md.end_of_burst = true;
-
-                    std::vector<std::complex<short> > empty;
-                    this->txStream->send(&empty.front(), empty.size(), md);
-                }
-
-                return NOOP;
-            }
-
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << block.size() << " samples");
-
-            std::vector<std::complex<short> > out;
-            out.assign(block.cxdata(), block.cxdata() + block.cxsize());
-
-            std::list<bulkio::SampleTimestamp> timestamps = block.getTimestamps();
-
-            md.has_time_spec = true;
-            md.time_spec = uhd::time_spec_t(timestamps.front().time.twsec, timestamps.front().time.tfsec);
-
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Output vector is of size: " << out.size());
-
-            this->txStream->send(&out.front(), out.size(), md);
-
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
-
+        if (not block) {
             if (inputStream.eos()) {
                 LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOS");
 
@@ -262,53 +92,90 @@ int RFNoC_TestComponent_i::serviceFunction()
                 std::vector<std::complex<short> > empty;
                 this->txStream->send(&empty.front(), empty.size(), md);
             }
+
+            return NOOP;
         }
 
-        // Perform RX, if necessary
-        if (this->rxStream) {
-            uhd::rx_metadata_t md;
-            std::vector<std::complex<short> > output;
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << block.size() << " samples");
 
-            output.resize(5000);
+        std::vector<std::complex<short> > out;
+        out.assign(block.cxdata(), block.cxdata() + block.cxsize());
 
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
+        std::list<bulkio::SampleTimestamp> timestamps = block.getTimestamps();
 
-            size_t num_rx_samps = this->rxStream->recv(&output.front(), output.size(), md, 1.0);
+        md.has_time_spec = true;
+        md.time_spec = uhd::time_spec_t(timestamps.front().time.twsec, timestamps.front().time.tfsec);
 
-            if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
-                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Timeout while streaming");
-                return NOOP;
-            } else if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_OVERFLOW) {
-                LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Overflow while streaming");
-            } else if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
-                LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << md.strerror());
-                return NOOP;
-            }
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Output vector is of size: " << out.size());
 
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
+        this->txStream->send(&out.front(), out.size(), md);
 
-            if (not this->outShortStream) {
-                LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Created an output stream");
-                this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
-                this->outShortStream.complex(true);
-            }
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
 
-            BULKIO::PrecisionUTCTime rxTime;
+        if (inputStream.eos()) {
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOS");
 
-            rxTime.twsec = md.time_spec.get_full_secs();
-            rxTime.tfsec = md.time_spec.get_frac_secs();
+            // Propagate the EOS to the RF-NoC Block
+            md.end_of_burst = true;
 
-            this->outShortStream.write(output.data(), num_rx_samps, rxTime);
-
-            if (md.end_of_burst) {
-                LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOB");
-
-                this->outShortStream.close();
-            }
+            std::vector<std::complex<short> > empty;
+            this->txStream->send(&empty.front(), empty.size(), md);
         }
-    }*/
 
-    return NORMAL;
+        dataTransceived = true;
+    }
+
+    // Perform RX, if necessary
+    if (this->rxStream) {
+        uhd::rx_metadata_t md;
+        std::vector<std::complex<short> > output;
+
+        output.resize(5000);
+
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
+
+        size_t num_rx_samps = this->rxStream->recv(&output.front(), output.size(), md, 1.0);
+
+        if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
+            LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Timeout while streaming");
+            return NOOP;
+        } else if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_OVERFLOW) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Overflow while streaming");
+        } else if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << md.strerror());
+            return NOOP;
+        }
+
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
+
+        if (not this->outShortStream) {
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Created an output stream");
+            this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
+            this->outShortStream.complex(true);
+        }
+
+        BULKIO::PrecisionUTCTime rxTime;
+
+        rxTime.twsec = md.time_spec.get_full_secs();
+        rxTime.tfsec = md.time_spec.get_frac_secs();
+
+        this->outShortStream.write(output.data(), num_rx_samps, rxTime);
+
+        if (md.end_of_burst) {
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOB");
+
+            this->outShortStream.close();
+        }
+
+        dataTransceived = true;
+    }
+
+    if (dataTransceived) {
+        return NORMAL;
+    } else {
+        return NOOP;
+    }
 }
 
 void RFNoC_TestComponent_i::setBlockIDCallback(blockIDCallback cb)
@@ -318,12 +185,71 @@ void RFNoC_TestComponent_i::setBlockIDCallback(blockIDCallback cb)
 
 void RFNoC_TestComponent_i::setRxStreamer(bool enable)
 {
-    LOG_INFO(RFNoC_TestComponent_i, this->_identifier << ": Set RX streamer: " << enable);
+    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+
+    if (enable) {
+        if (this->rxStream) {
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempted to set RX streamer, but already streaming");
+            return;
+        }
+
+        uhd::stream_args_t stream_args("sc16", "sc16");
+        uhd::device_addr_t streamer_args;
+
+        streamer_args["block_id"] = this->blockID;
+        streamer_args["spp"] = "1024";
+
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
+
+        this->rxStream = this->usrp->get_rx_stream(stream_args);
+
+        uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
+        stream_cmd.num_samps = 0;
+        stream_cmd.stream_now = true;
+        stream_cmd.time_spec = uhd::time_spec_t();
+
+        this->rxStream->issue_stream_cmd(stream_cmd);
+    } else {
+        if (not this->rxStream) {
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempted to unset RX streamer, but not streaming");
+            return;
+        }
+
+        uhd::stream_cmd_t streamCmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
+
+        this->rxStream->issue_stream_cmd(streamCmd);
+
+        this->rxStream.reset();
+    }
 }
 
 void RFNoC_TestComponent_i::setTxStreamer(bool enable)
 {
-    LOG_INFO(RFNoC_TestComponent_i, this->_identifier << ": Set TX streamer: " << enable);
+    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+
+    if (enable) {
+        if (this->txStream) {
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempted to set TX streamer, but already streaming");
+            return;
+        }
+
+        uhd::stream_args_t stream_args("sc16", "sc16");
+        uhd::device_addr_t streamer_args;
+
+        streamer_args["block_id"] = this->blockID;
+        streamer_args["spp"] = "1024";
+
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
+
+        this->txStream = this->usrp->get_tx_stream(stream_args);
+    } else {
+        if (not this->txStream) {
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempted to unset TX streamer, but not streaming");
+            return;
+        }
+
+        this->txStream.reset();
+    }
 }
 
 void RFNoC_TestComponent_i::setUsrp(uhd::device3::sptr usrp)
@@ -336,8 +262,6 @@ void RFNoC_TestComponent_i::setUsrp(uhd::device3::sptr usrp)
         LOG_FATAL(RFNoC_TestComponent_i, "Received a USRP which is not RF-NoC compatible.");
         throw std::exception();
     }
-
-    //this->rxGraph = this->usrp->create_graph("default");
 }
 
 void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue)

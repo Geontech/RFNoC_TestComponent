@@ -18,7 +18,6 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
 
         void constructor();
 
-        void start() throw (CF::Resource::StartError, CORBA::SystemException);
         int serviceFunction();
 
         void setBlockIDCallback(blockIDCallback cb);
