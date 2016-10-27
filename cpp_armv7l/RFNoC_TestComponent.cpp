@@ -271,11 +271,13 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
     }
 }
 
-void RFNoC_TestComponent_i::setUsrp(uhd::device3::sptr usrp)
+void RFNoC_TestComponent_i::setUsrpAddress(uhd::device_addr_t usrpAddress)
 {
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
-    this->usrp = usrp;
+    this->usrp = uhd::device3::make(usrpAddress);
+
+    this->usrpAddress = usrpAddress;
 
     if (not usrp) {
         LOG_FATAL(RFNoC_TestComponent_i, "Received a USRP which is not RF-NoC compatible.");

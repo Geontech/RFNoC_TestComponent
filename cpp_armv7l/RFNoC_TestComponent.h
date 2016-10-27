@@ -23,7 +23,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         void setBlockIDCallback(blockIDCallback cb);
         void setRxStreamer(bool enable);
         void setTxStreamer(bool enable);
-        void setUsrp(uhd::device3::sptr usrp);
+        void setUsrpAddress(uhd::device_addr_t usrpAddress);
 
     private:
         void argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue);
@@ -40,6 +40,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         BULKIO::StreamSRI sri;
         uhd::tx_streamer::sptr txStream;
         uhd::device3::sptr usrp;
+        uhd::device_addr_t usrpAddress;
 };
 
 #endif // RFNOC_TESTCOMPONENT_I_IMPL_H
