@@ -163,11 +163,11 @@ int RFNoC_TestComponent_i::serviceFunction()
 
         this->outShortStream.write(output.data(), num_rx_samps, rxTime);
 
-        if (md.end_of_burst) {
+        /*if (md.end_of_burst) {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOB");
 
             this->outShortStream.close();
-        }
+        }*/
 
         dataTransceived = true;
     }
