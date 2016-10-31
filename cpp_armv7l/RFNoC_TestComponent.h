@@ -33,6 +33,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
 
     private:
         blockIDCallback blockIDChange;
+        std::vector<std::complex<short> > output;
         bulkio::OutShortStream outShortStream;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
         uhd::rx_streamer::sptr rxStream;

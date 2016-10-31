@@ -130,9 +130,6 @@ int RFNoC_TestComponent_i::serviceFunction()
     // Perform RX, if necessary
     if (this->rxStream) {
         uhd::rx_metadata_t md;
-        std::vector<std::complex<short> > output;
-
-        output.resize(this->spp);
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
 
@@ -207,6 +204,8 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 1024);
 
         streamer_args["spp"] = boost::lexical_cast<std::string>(this->spp);
+
+        this->output.resize(100*spp);
 
         stream_args.args = streamer_args;
 
