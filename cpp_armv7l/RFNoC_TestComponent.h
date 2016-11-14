@@ -52,8 +52,11 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         void stop() throw (CF::Resource::StopError, CORBA::SystemException);
 
         // Methods to be called by the persona, inherited from RFNoC_ComponentInterface
+        bool activate();
         void setBlockIDCallback(blockIDCallback cb);
         void setRxStreamer(bool enable);
+        void setSetRxStreamer(setSetStreamerCallback cb);
+        void setSetTxStreamer(setSetStreamerCallback cb);
         void setTxStreamer(bool enable);
         void setUsrpAddress(uhd::device_addr_t usrpAddress);
 
@@ -72,6 +75,8 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
         uhd::rx_streamer::sptr rxStream;
         GenericThreadedComponent *rxThread;
+        setSetStreamerCallback setSetRxStreamerCb;
+        setSetStreamerCallback setSetTxStreamerCb;
         size_t spp;
         BULKIO::StreamSRI sri;
         uhd::tx_streamer::sptr txStream;

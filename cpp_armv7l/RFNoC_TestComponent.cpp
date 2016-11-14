@@ -247,6 +247,8 @@ int RFNoC_TestComponent_i::txServiceFunction()
  */
 void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::SystemException)
 {
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
     RFNoC_TestComponent_base::start();
 
     if (this->rxThread) {
@@ -263,6 +265,8 @@ void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::Syst
  */
 void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::SystemException)
 {
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
     if (this->rxThread) {
         if (this->rxThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "RX Thread had to be killed");
@@ -276,6 +280,19 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
     }
 
     RFNoC_TestComponent_base::stop();
+}
+
+/*
+ * A method which allows the callbacks passed by the persona to be called.
+ */
+bool RFNoC_TestComponent_i::activate()
+{
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    this->setSetRxStreamerCb(this->identifier(), boost::bind(&RFNoC_TestComponent_i::setRxStreamer, this, _1));
+    this->setSetTxStreamerCb(this->identifier(), boost::bind(&RFNoC_TestComponent_i::setTxStreamer, this, _1));
+
+    return true;
 }
 
 /*
@@ -367,6 +384,30 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         delete this->rxThread;
         this->rxThread = NULL;
     }
+}
+
+/*
+ * A method which allows the persona to set the callback which will be used
+ * by the component to set another callback, which will be used to set or unset
+ * the component as an RX streamer.
+ */
+void RFNoC_TestComponent_i::setSetRxStreamer(setSetStreamerCallback cb)
+{
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    this->setSetRxStreamerCb = cb;
+}
+
+/*
+ * A method which allows the persona to set the callback which will be used
+ * by the component to set another callback, which will be used to set or unset
+ * the component as a TX streamer.
+ */
+void RFNoC_TestComponent_i::setSetTxStreamer(setSetStreamerCallback cb)
+{
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    this->setSetTxStreamerCb = cb;
 }
 
 /*

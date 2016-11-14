@@ -44,10 +44,10 @@ extern "C" {
         //      Example:
         //         resourcePtr->setSharedAPI(sharedAPI);
         //resourcePtr->setParentDevice(parentDevice);
-        resourcePtr->setUsrpAddress(usrpAddress);
         resourcePtr->setBlockIDCallback(cb);
-        setSetRxStreamerCb(resourcePtr->_identifier, boost::bind(&RFNoC_TestComponent_i::setRxStreamer, resourcePtr, _1));
-        setSetTxStreamerCb(resourcePtr->_identifier, boost::bind(&RFNoC_TestComponent_i::setTxStreamer, resourcePtr, _1));
+        resourcePtr->setSetRxStreamer(setSetRxStreamerCb);
+        resourcePtr->setSetTxStreamer(setSetTxStreamerCb);
+        resourcePtr->setUsrpAddress(usrpAddress);
 
         return resourcePtr;
     }
