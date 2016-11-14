@@ -9,7 +9,29 @@
 
 #include "RFNoC_Component.h"
 
-class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
+/*
+ * A class for creating a service function thread
+ */
+class GenericThreadedComponent : public ThreadedComponent
+{
+    typedef boost::function<int()> serviceFunction_t;
+
+    public:
+        GenericThreadedComponent(serviceFunction_t sf);
+
+        virtual int serviceFunction();
+
+        void start();
+        bool stop();
+
+    private:
+        serviceFunction_t serviceFunctionMethod;
+};
+
+/*
+ * The class for the component
+ */
+class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_ComponentInterface
 {
     ENABLE_LOGGING
     public:
@@ -18,17 +40,29 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
 
         void constructor();
 
-        int serviceFunction();
+        // Service functions for RX and TX
+        int rxServiceFunction();
+        int txServiceFunction();
 
+        // Don't use the default serviceFunction for clarity
+        int serviceFunction() { return FINISH; }
+
+        // Override start and stop
+        void start() throw (CF::Resource::StartError, CORBA::SystemException);
+        void stop() throw (CF::Resource::StopError, CORBA::SystemException);
+
+        // Methods to be called by the persona, inherited from RFNoC_ComponentInterface
         void setBlockIDCallback(blockIDCallback cb);
         void setRxStreamer(bool enable);
         void setTxStreamer(bool enable);
         void setUsrpAddress(uhd::device_addr_t usrpAddress);
 
     private:
+        // Property change listeners
         void argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue);
 
     private:
+        // Internal method for setting the arguments on the block
         bool setArgs(std::vector<arg_struct> &newArgs);
 
     private:
@@ -37,9 +71,11 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base
         bulkio::OutShortStream outShortStream;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
         uhd::rx_streamer::sptr rxStream;
+        GenericThreadedComponent *rxThread;
         size_t spp;
         BULKIO::StreamSRI sri;
         uhd::tx_streamer::sptr txStream;
+        GenericThreadedComponent *txThread;
         uhd::device3::sptr usrp;
         uhd::device_addr_t usrpAddress;
 };
