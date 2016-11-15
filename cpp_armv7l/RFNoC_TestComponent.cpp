@@ -283,19 +283,6 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
 }
 
 /*
- * A method which allows the callbacks passed by the persona to be called.
- */
-bool RFNoC_TestComponent_i::activate()
-{
-    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
-
-    this->setSetRxStreamerCb(this->identifier(), boost::bind(&RFNoC_TestComponent_i::setRxStreamer, this, _1));
-    this->setSetTxStreamerCb(this->identifier(), boost::bind(&RFNoC_TestComponent_i::setTxStreamer, this, _1));
-
-    return true;
-}
-
-/*
  * A method which allows a callback to be set for the block ID changing. This
  * callback should point back to the persona to alert it of the component's
  * block IDs
@@ -384,30 +371,6 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         delete this->rxThread;
         this->rxThread = NULL;
     }
-}
-
-/*
- * A method which allows the persona to set the callback which will be used
- * by the component to set another callback, which will be used to set or unset
- * the component as an RX streamer.
- */
-void RFNoC_TestComponent_i::setSetRxStreamer(setSetStreamerCallback cb)
-{
-    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
-
-    this->setSetRxStreamerCb = cb;
-}
-
-/*
- * A method which allows the persona to set the callback which will be used
- * by the component to set another callback, which will be used to set or unset
- * the component as a TX streamer.
- */
-void RFNoC_TestComponent_i::setSetTxStreamer(setSetStreamerCallback cb)
-{
-    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
-
-    this->setSetTxStreamerCb = cb;
 }
 
 /*

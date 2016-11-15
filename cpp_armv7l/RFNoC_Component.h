@@ -35,12 +35,6 @@ typedef boost::function<void(const std::string &componentID, const std::vector<u
 class RFNoC_ComponentInterface {
     public:
         /*
-         * This method is called by the persona and should call the set
-         * streamer callbacks.
-         */
-        virtual bool activate() = 0;
-
-        /*
          * This method should keep a copy of the blockIDCallback and/or call it
          * with the component's block ID(s).
          */
@@ -52,18 +46,6 @@ class RFNoC_ComponentInterface {
          * creating appropriate SRI.
          */
         virtual void setRxStreamer(bool enable) = 0;
-
-        /*
-         * This method should allow the Persona to set the setSetRxStreamer
-         * callback for this component.
-         */
-        virtual void setSetRxStreamer(setSetStreamerCallback cb) = 0;
-
-        /*
-         * This method should allow the Persona to set the setSetTxStreamer
-         * callback for this component.
-         */
-        virtual void setSetTxStreamer(setSetStreamerCallback cb) = 0;
 
         /*
          * This method should enable streaming to the component's first/only

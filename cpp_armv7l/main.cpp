@@ -45,9 +45,9 @@ extern "C" {
         //         resourcePtr->setSharedAPI(sharedAPI);
         //resourcePtr->setParentDevice(parentDevice);
         resourcePtr->setBlockIDCallback(cb);
-        resourcePtr->setSetRxStreamer(setSetRxStreamerCb);
-        resourcePtr->setSetTxStreamer(setSetTxStreamerCb);
         resourcePtr->setUsrpAddress(usrpAddress);
+        setSetRxStreamerCb(resourcePtr->_identifier, boost::bind(&RFNoC_TestComponent_i::setRxStreamer, resourcePtr, _1));
+        setSetTxStreamerCb(resourcePtr->_identifier, boost::bind(&RFNoC_TestComponent_i::setTxStreamer, resourcePtr, _1));
 
         return resourcePtr;
     }
