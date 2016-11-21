@@ -136,7 +136,7 @@ int RFNoC_TestComponent_i::rxServiceFunction()
         //this->outShortStream.write(output.data(), num_rx_samps, rxTime);
         short *outputBuffer = (short *) this->output.data();
 
-        this->dataShort_out->pushPacket(outputBuffer, this->output.size() * 2, rxTime, md.end_of_burst, "my_stream_yo");
+        this->dataShort_out->pushPacket(outputBuffer, this->output.size() * 2, rxTime, md.end_of_burst, this->sri.streamID._ptr);
 
         // Respond to an end of burst
         /*if (md.end_of_burst) {
