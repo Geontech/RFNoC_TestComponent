@@ -12,6 +12,8 @@ cpp_armv7l/configure
 cpp_armv7l/depcomp
 cpp_armv7l/install-sh
 cpp_armv7l/libRFNoC_TestComponent.la
+cpp_armv7l/libRFNoC_TestComponent_la-GenericThreadedComponent.lo
+cpp_armv7l/libRFNoC_TestComponent_la-GenericThreadedComponent.o
 cpp_armv7l/libRFNoC_TestComponent_la-RFNoC_TestComponent.lo
 cpp_armv7l/libRFNoC_TestComponent_la-RFNoC_TestComponent.o
 cpp_armv7l/libRFNoC_TestComponent_la-RFNoC_TestComponent_base.lo

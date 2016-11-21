@@ -7,26 +7,8 @@
 #include <uhd/rfnoc/graph.hpp>
 #include <uhd/device3.hpp>
 
+#include "GenericThreadedComponent.h"
 #include "RFNoC_Component.h"
-
-/*
- * A class for creating a service function thread
- */
-class GenericThreadedComponent : public ThreadedComponent
-{
-    typedef boost::function<int()> serviceFunction_t;
-
-    public:
-        GenericThreadedComponent(serviceFunction_t sf);
-
-        virtual int serviceFunction();
-
-        void start();
-        bool stop();
-
-    private:
-        serviceFunction_t serviceFunctionMethod;
-};
 
 /*
  * The class for the component
@@ -61,6 +43,9 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         // Property change listeners
         void argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue);
 
+        // Stream listeners
+        void streamChanged(bulkio::InShortPort::StreamType stream);
+
     private:
         // Internal method for setting the arguments on the block
         bool setArgs(std::vector<arg_struct> &newArgs);
@@ -68,7 +53,6 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
     private:
         blockIDCallback blockIDChange;
         std::vector<std::complex<short> > output;
-        bulkio::OutShortStream outShortStream;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
         uhd::rx_streamer::sptr rxStream;
         GenericThreadedComponent *rxThread;

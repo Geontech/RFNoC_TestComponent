@@ -9,38 +9,6 @@
 
 #include "RFNoC_TestComponent.h"
 
-/*
- * Initialize the service function callback
- */
-GenericThreadedComponent::GenericThreadedComponent(serviceFunction_t sf) :
-    serviceFunctionMethod(sf)
-{
-}
-
-/*
- * Call the service function callback
- */
-int GenericThreadedComponent::serviceFunction()
-{
-    return this->serviceFunctionMethod();
-}
-
-/*
- * Start the thread
- */
-void GenericThreadedComponent::start()
-{
-    this->startThread();
-}
-
-/*
- * Stop the thread
- */
-bool GenericThreadedComponent::stop()
-{
-    return this->stopThread();
-}
-
 PREPARE_LOGGING(RFNoC_TestComponent_i)
 
 /*
@@ -114,6 +82,12 @@ void RFNoC_TestComponent_i::constructor()
         std::vector<uhd::rfnoc::block_id_t> blocks(1, this->blockID);
         this->blockIDChange(this->_identifier, blocks);
     }
+
+    // Add an SRI change listener
+    this->dataShort_in->addStreamListener(this, &RFNoC_TestComponent_i::streamChanged);
+
+    // Preallocate the vector
+    this->output.resize(10000);
 }
 
 /*
@@ -146,11 +120,11 @@ int RFNoC_TestComponent_i::rxServiceFunction()
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
 
         // Create the output stream
-        if (not this->outShortStream) {
+        /*if (not this->outShortStream) {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Created an output stream");
             this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
             this->outShortStream.complex(true);
-        }
+        }*/
 
         // Get the time stamps from the meta data
         BULKIO::PrecisionUTCTime rxTime;
@@ -159,7 +133,10 @@ int RFNoC_TestComponent_i::rxServiceFunction()
         rxTime.tfsec = md.time_spec.get_frac_secs();
 
         // Write the data to the output stream
-        this->outShortStream.write(output.data(), num_rx_samps, rxTime);
+        //this->outShortStream.write(output.data(), num_rx_samps, rxTime);
+        short *outputBuffer = (short *) this->output.data();
+
+        this->dataShort_out->pushPacket(outputBuffer, this->output.size() * 2, rxTime, md.end_of_burst, "my_stream_yo");
 
         // Respond to an end of burst
         /*if (md.end_of_burst) {
@@ -182,53 +159,47 @@ int RFNoC_TestComponent_i::txServiceFunction()
     // Perform TX, if necessary
     if (this->txStream) {
         // Wait on input data
-        bulkio::InShortStream inputStream = this->dataShort_in->getCurrentStream(bulkio::Const::BLOCKING);
+        /*bulkio::InShortStream inputStream = this->dataShort_in->getCurrentStream(bulkio::Const::BLOCKING);
 
         if (not inputStream) {
             return NOOP;
         }
 
         // Get the block from the input stream
-        bulkio::ShortDataBlock block = inputStream.read();
-        uhd::tx_metadata_t md;
+        bulkio::ShortDataBlock block = inputStream.read();*/
 
-        // The stream was valid but no data was received
-        if (not block) {
-            // On EOS, forward to the RF-NoC block
-            if (inputStream.eos()) {
-                LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOS");
+        bulkio::InShortPort::DataTransferType *packet = this->dataShort_in->getPacket(bulkio::Const::BLOCKING);
 
-                // Propagate the EOS to the RF-NoC Block
-                md.end_of_burst = true;
-
-                std::vector<std::complex<short> > empty;
-                this->txStream->send(&empty.front(), empty.size(), md);
-            }
-
+        if (not packet) {
             return NOOP;
         }
 
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << block.size() << " samples");
+        uhd::tx_metadata_t md;
+        std::complex<short> *block = (std::complex<short> *) packet->dataBuffer.data();
+        size_t blockSize = packet->dataBuffer.size() / 2;
 
-        // Get the timestamps to send to the RF-NoC block
-        std::list<bulkio::SampleTimestamp> timestamps = block.getTimestamps();
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << blockSize << " samples");
+
+        // Get the timestamp to send to the RF-NoC block
+        BULKIO::PrecisionUTCTime time = packet->T;
 
         md.has_time_spec = true;
-        md.time_spec = uhd::time_spec_t(timestamps.front().time.twsec, timestamps.front().time.tfsec);
+        md.time_spec = uhd::time_spec_t(time.twsec, time.tfsec);
 
         // Assign the data to the output vector
-        output.assign(block.cxdata(), block.cxdata() + block.cxsize());
+        //output.assign(block.cxdata(), block.cxdata() + block.cxsize());
 
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Output vector is of size: " << output.size());
+        //LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
+        //LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Output vector is of size: " << output.size());
 
         // Send the data to the RF-NoC block
-        this->txStream->send(&output.front(), output.size(), md);
+        //this->txStream->send(&output.front(), output.size(), md);
+        this->txStream->send(block, blockSize, md);
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
 
         // On EOS, forward to the RF-NoC block
-        if (inputStream.eos()) {
+        if (packet->EOS) {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOS");
 
             // Propagate the EOS to the RF-NoC Block
@@ -237,9 +208,12 @@ int RFNoC_TestComponent_i::txServiceFunction()
             std::vector<std::complex<short> > empty;
             this->txStream->send(&empty.front(), empty.size(), md);
         }
+
+        delete packet;
+        return NORMAL;
     }
 
-    return NORMAL;
+    return NOOP;
 }
 
 /*
@@ -469,6 +443,15 @@ void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> &oldValue,
         LOG_WARN(RFNoC_TestComponent_i, "Unable to set new arguments, reverting");
         this->args = oldValue;
     }
+}
+
+void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream)
+{
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    this->sri = stream.sri();
+
+    this->dataShort_out->pushSRI(this->sri);
 }
 
 /*
