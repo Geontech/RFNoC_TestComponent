@@ -242,13 +242,13 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     if (this->rxThread) {
-        if (this->rxThread->stop()) {
+        if (not this->rxThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "RX Thread had to be killed");
         }
     }
 
     if (this->txThread) {
-        if (this->txThread->stop()) {
+        if (not this->txThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "TX Thread had to be killed");
         }
     }
@@ -334,13 +334,13 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
 
         this->rxStream->issue_stream_cmd(streamCmd);
 
-        // Release the RX stream pointer
-        this->rxStream.reset();
-
         // Stop and delete the RX stream thread
         if (not this->rxThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "RX Thread had to be killed");
         }
+
+        // Release the RX stream pointer
+        this->rxStream.reset();
 
         delete this->rxThread;
         this->rxThread = NULL;
@@ -398,13 +398,13 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
             return;
         }
 
-        // Release the TX stream pointer
-        this->txStream.reset();
-
         // Stop and delete the TX stream thread
         if (not this->txThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "TX Thread had to be killed");
         }
+
+        // Release the TX stream pointer
+        this->txStream.reset();
 
         delete this->txThread;
         this->txThread = NULL;
