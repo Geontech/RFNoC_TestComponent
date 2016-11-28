@@ -47,6 +47,9 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         void streamChanged(bulkio::InShortPort::StreamType stream);
 
     private:
+        void retrieveRxStream();
+        void retrieveTxStream();
+
         // Internal method for setting the arguments on the block
         bool setArgs(std::vector<arg_struct> &newArgs);
 

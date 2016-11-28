@@ -285,34 +285,19 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempting to set RX streamer");
 
-        // Set the stream arguments
-        // Only support short complex for now
-        uhd::stream_args_t stream_args("sc16", "sc16");
-        uhd::device_addr_t streamer_args;
+        // Get the RX stream
+        retrieveRxStream();
 
-        streamer_args["block_id"] = this->blockID;
-
-        // Get the spp from the block
-        this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 1024);
-
-        streamer_args["spp"] = boost::lexical_cast<std::string>(this->spp);
-
+        // Create the receive buffer
         this->output.resize(10*spp);
 
-        stream_args.args = streamer_args;
-
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
-
-        // Retrieve the RX stream as specified from the device 3
-        this->rxStream = this->usrp->get_rx_stream(stream_args);
-
         // Start continuous streaming immediately
-        /*uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
+        uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
         stream_cmd.num_samps = 0;
         stream_cmd.stream_now = true;
         stream_cmd.time_spec = uhd::time_spec_t();
 
-        this->rxStream->issue_stream_cmd(stream_cmd);*/
+        this->rxStream->issue_stream_cmd(stream_cmd);
 
         // Create the RX receive thread
         this->rxThread = new GenericThreadedComponent(boost::bind(&RFNoC_TestComponent_i::rxServiceFunction, this));
@@ -364,24 +349,8 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempting to set TX streamer");
 
-        // Set the stream arguments
-        // Only support short complex for now
-        uhd::stream_args_t stream_args("sc16", "sc16");
-        uhd::device_addr_t streamer_args;
-
-        streamer_args["block_id"] = this->blockID;
-
-        // Get the spp from the block
-        this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 1024);
-
-        streamer_args["spp"] = boost::lexical_cast<std::string>(this->spp);
-
-        stream_args.args = streamer_args;
-
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
-
-        // Retrieve the TX stream as specified from the device 3
-        this->txStream = this->usrp->get_tx_stream(stream_args);
+        // Get the TX stream
+        retrieveTxStream();
 
         // Create the TX transmit thread
         this->txThread = new GenericThreadedComponent(boost::bind(&RFNoC_TestComponent_i::txServiceFunction, this));
@@ -456,6 +425,54 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
     this->dataShort_out->pushSRI(this->sri);
 
     this->receivedSRI = true;
+}
+
+void RFNoC_TestComponent_i::retrieveRxStream()
+{
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    // Set the stream arguments
+    // Only support short complex for now
+    uhd::stream_args_t stream_args("sc16", "sc16");
+    uhd::device_addr_t streamer_args;
+
+    streamer_args["block_id"] = this->blockID;
+
+    // Get the spp from the block
+    this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 1024);
+
+    streamer_args["spp"] = boost::lexical_cast<std::string>(this->spp);
+
+    stream_args.args = streamer_args;
+
+    LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
+
+    // Retrieve the RX stream as specified from the device 3
+    this->rxStream = this->usrp->get_rx_stream(stream_args);
+}
+
+void RFNoC_TestComponent_i::retrieveTxStream()
+{
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    // Set the stream arguments
+    // Only support short complex for now
+    uhd::stream_args_t stream_args("sc16", "sc16");
+    uhd::device_addr_t streamer_args;
+
+    streamer_args["block_id"] = this->blockID;
+
+    // Get the spp from the block
+    this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 1024);
+
+    streamer_args["spp"] = boost::lexical_cast<std::string>(this->spp);
+
+    stream_args.args = streamer_args;
+
+    LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
+
+    // Retrieve the TX stream as specified from the device 3
+    this->txStream = this->usrp->get_tx_stream(stream_args);
 }
 
 /*
