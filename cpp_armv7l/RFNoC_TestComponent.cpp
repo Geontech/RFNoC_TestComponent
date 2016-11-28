@@ -111,7 +111,7 @@ int RFNoC_TestComponent_i::rxServiceFunction()
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
 
-        size_t num_rx_samps = this->rxStream->recv(&output.front(), output.size(), md, 1.0);
+        size_t num_rx_samps = this->rxStream->recv(&output.front(), output.size(), md, 3.0);
 
         // Check the meta data for error codes
         if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
