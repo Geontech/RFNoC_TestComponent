@@ -17,6 +17,7 @@ PREPARE_LOGGING(RFNoC_TestComponent_i)
 RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label) :
     RFNoC_TestComponent_base(uuid, label),
     blockIDChange(NULL),
+    receivedSRI(false),
     rxThread(NULL),
     spp(1024),
     txThread(NULL)
@@ -99,6 +100,12 @@ int RFNoC_TestComponent_i::rxServiceFunction()
 
     // Perform RX, if necessary
     if (this->rxStream) {
+        // Don't bother doing anything until the SRI has been received
+        if (not this->receivedSRI) {
+            LOG_DEBUG(RFNoC_TestComponent_i, "RX Thread active but no SRI has been received");
+            return NOOP;
+        }
+
         // Recv from the block
         uhd::rx_metadata_t md;
 
@@ -117,7 +124,7 @@ int RFNoC_TestComponent_i::rxServiceFunction()
             return NOOP;
         }
 
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "RX Thread Received " << num_rx_samps << " samples");
 
         // Get the time stamps from the meta data
         BULKIO::PrecisionUTCTime rxTime;
@@ -154,7 +161,7 @@ int RFNoC_TestComponent_i::txServiceFunction()
         std::complex<short> *block = (std::complex<short> *) packet->dataBuffer.data();
         size_t blockSize = packet->dataBuffer.size() / 2;
 
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << blockSize << " samples");
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "TX Thread Received " << blockSize << " samples");
 
         // Get the timestamp to send to the RF-NoC block
         BULKIO::PrecisionUTCTime time = packet->T;
@@ -165,7 +172,7 @@ int RFNoC_TestComponent_i::txServiceFunction()
         // Send the data
         this->txStream->send(block, blockSize, md);
 
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "TX Thread Sent data");
 
         // On EOS, forward to the RF-NoC block
         if (packet->EOS) {
@@ -424,6 +431,8 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
     this->sri.mode = 1;
 
     this->dataShort_out->pushSRI(this->sri);
+
+    this->receivedSRI = true;
 }
 
 /*

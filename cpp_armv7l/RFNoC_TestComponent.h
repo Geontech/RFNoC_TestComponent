@@ -53,6 +53,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
     private:
         blockIDCallback blockIDChange;
         std::vector<std::complex<short> > output;
+        bool receivedSRI;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
         uhd::rx_streamer::sptr rxStream;
         GenericThreadedComponent *rxThread;
