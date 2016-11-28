@@ -284,12 +284,12 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         this->rxStream = this->usrp->get_rx_stream(stream_args);
 
         // Start continuous streaming immediately
-        uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
+        /*uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
         stream_cmd.num_samps = 0;
         stream_cmd.stream_now = true;
         stream_cmd.time_spec = uhd::time_spec_t();
 
-        this->rxStream->issue_stream_cmd(stream_cmd);
+        this->rxStream->issue_stream_cmd(stream_cmd);*/
 
         // Create the RX receive thread
         this->rxThread = new GenericThreadedComponent(boost::bind(&RFNoC_TestComponent_i::rxServiceFunction, this));
