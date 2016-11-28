@@ -170,9 +170,9 @@ int RFNoC_TestComponent_i::txServiceFunction()
         md.time_spec = uhd::time_spec_t(time.twsec, time.tfsec);
 
         // Send the data
-        this->txStream->send(block, blockSize, md);
+        size_t num_tx_samps = this->txStream->send(block, blockSize, md);
 
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "TX Thread Sent data");
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "TX Thread Sent " << num_tx_samps << " samples");
 
         // On EOS, forward to the RF-NoC block
         if (packet->EOS) {
