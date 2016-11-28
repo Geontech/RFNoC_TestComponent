@@ -124,6 +124,7 @@ int RFNoC_TestComponent_i::rxServiceFunction()
             return NOOP;
         }
 
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "RX Thread Requested " << output.size() << " samples");
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "RX Thread Received " << num_rx_samps << " samples");
 
         // Get the time stamps from the meta data
