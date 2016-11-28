@@ -175,24 +175,7 @@ int RFNoC_TestComponent_i::txServiceFunction()
         if (blockSize != 0 and num_tx_samps == 0) {
             LOG_DEBUG(RFNoC_TestComponent_i, "The TX stream is no longer valid, obtaining a new one");
 
-            // Set the stream arguments
-            // Only support short complex for now
-            uhd::stream_args_t stream_args("sc16", "sc16");
-            uhd::device_addr_t streamer_args;
-
-            streamer_args["block_id"] = this->blockID;
-
-            // Get the spp from the block
-            this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 1024);
-
-            streamer_args["spp"] = boost::lexical_cast<std::string>(this->spp);
-
-            stream_args.args = streamer_args;
-
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
-
-            // Retrieve the TX stream as specified from the device 3
-            this->txStream = this->usrp->get_tx_stream(stream_args);
+            retrieveTxStream();
         }
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "TX Thread Sent " << num_tx_samps << " samples");
@@ -431,6 +414,12 @@ void RFNoC_TestComponent_i::retrieveRxStream()
 {
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
+    // Release the old stream if necessary
+    if (this->rxStream) {
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Releasing old RX stream");
+        this->rxStream.reset();
+    }
+
     // Set the stream arguments
     // Only support short complex for now
     uhd::stream_args_t stream_args("sc16", "sc16");
@@ -448,12 +437,24 @@ void RFNoC_TestComponent_i::retrieveRxStream()
     LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
 
     // Retrieve the RX stream as specified from the device 3
-    this->rxStream = this->usrp->get_rx_stream(stream_args);
+    try {
+        this->rxStream = this->usrp->get_rx_stream(stream_args);
+    } catch(uhd::runtime_error &e) {
+        LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to retrieve RX stream: " << e.what());
+    } catch(...) {
+        LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Unexpected error occurred while retrieving RX stream");
+    }
 }
 
 void RFNoC_TestComponent_i::retrieveTxStream()
 {
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    // Release the old stream if necessary
+    if (this->txStream) {
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Releasing old TX stream");
+        this->txStream.reset();
+    }
 
     // Set the stream arguments
     // Only support short complex for now
@@ -472,7 +473,13 @@ void RFNoC_TestComponent_i::retrieveTxStream()
     LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Using streamer arguments: " << stream_args.args.to_string());
 
     // Retrieve the TX stream as specified from the device 3
-    this->txStream = this->usrp->get_tx_stream(stream_args);
+    try {
+        this->txStream = this->usrp->get_tx_stream(stream_args);
+    } catch(uhd::runtime_error &e) {
+        LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to retrieve TX stream: " << e.what());
+    } catch(...) {
+        LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Unexpected error occurred while retrieving TX stream");
+    }
 }
 
 /*
