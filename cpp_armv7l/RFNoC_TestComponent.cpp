@@ -119,13 +119,6 @@ int RFNoC_TestComponent_i::rxServiceFunction()
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Received " << num_rx_samps << " samples");
 
-        // Create the output stream
-        /*if (not this->outShortStream) {
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Created an output stream");
-            this->outShortStream = this->dataShort_out->createStream("my_stream_yo");
-            this->outShortStream.complex(true);
-        }*/
-
         // Get the time stamps from the meta data
         BULKIO::PrecisionUTCTime rxTime;
 
@@ -133,17 +126,9 @@ int RFNoC_TestComponent_i::rxServiceFunction()
         rxTime.tfsec = md.time_spec.get_frac_secs();
 
         // Write the data to the output stream
-        //this->outShortStream.write(output.data(), num_rx_samps, rxTime);
         short *outputBuffer = (short *) this->output.data();
 
         this->dataShort_out->pushPacket(outputBuffer, this->output.size() * 2, rxTime, md.end_of_burst, this->sri.streamID._ptr);
-
-        // Respond to an end of burst
-        /*if (md.end_of_burst) {
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "EOB");
-
-            this->outShortStream.close();
-        }*/
     }
 
     return NORMAL;
@@ -159,15 +144,6 @@ int RFNoC_TestComponent_i::txServiceFunction()
     // Perform TX, if necessary
     if (this->txStream) {
         // Wait on input data
-        /*bulkio::InShortStream inputStream = this->dataShort_in->getCurrentStream(bulkio::Const::BLOCKING);
-
-        if (not inputStream) {
-            return NOOP;
-        }
-
-        // Get the block from the input stream
-        bulkio::ShortDataBlock block = inputStream.read();*/
-
         bulkio::InShortPort::DataTransferType *packet = this->dataShort_in->getPacket(bulkio::Const::BLOCKING);
 
         if (not packet) {
@@ -186,14 +162,7 @@ int RFNoC_TestComponent_i::txServiceFunction()
         md.has_time_spec = true;
         md.time_spec = uhd::time_spec_t(time.twsec, time.tfsec);
 
-        // Assign the data to the output vector
-        //output.assign(block.cxdata(), block.cxdata() + block.cxsize());
-
-        //LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Copied data to vector");
-        //LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Output vector is of size: " << output.size());
-
-        // Send the data to the RF-NoC block
-        //this->txStream->send(&output.front(), output.size(), md);
+        // Send the data
         this->txStream->send(block, blockSize, md);
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Sent data");
@@ -450,6 +419,9 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     this->sri = stream.sri();
+
+    // Default to complex
+    this->sri.mode = 1;
 
     this->dataShort_out->pushSRI(this->sri);
 }
