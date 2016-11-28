@@ -163,6 +163,12 @@ int RFNoC_TestComponent_i::txServiceFunction()
 
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "TX Thread Received " << blockSize << " samples");
 
+        if (blockSize == 0) {
+            LOG_DEBUG(RFNoC_TestComponent_i, "Skipping empty packet");
+            delete packet;
+            return NOOP;
+        }
+
         // Get the timestamp to send to the RF-NoC block
         BULKIO::PrecisionUTCTime time = packet->T;
 
