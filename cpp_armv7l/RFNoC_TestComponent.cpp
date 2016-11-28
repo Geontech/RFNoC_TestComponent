@@ -33,14 +33,14 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Stop streaming
-    if (this->rxStream) {
+    if (this->rxStream.get()) {
         uhd::stream_cmd_t streamCmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
 
         this->rxStream->issue_stream_cmd(streamCmd);
     }
 
     // Reset the RF-NoC block
-    if (this->rfnocBlock) {
+    if (this->rfnocBlock.get()) {
         this->rfnocBlock->clear();
     }
 
@@ -65,7 +65,7 @@ void RFNoC_TestComponent_i::constructor()
     this->rfnocBlock = this->usrp->get_block_ctrl<uhd::rfnoc::block_ctrl_base>(this->blockID);
 
     // Without this, there is no need to continue
-    if (not this->rfnocBlock) {
+    if (not this->rfnocBlock.get()) {
         LOG_FATAL(RFNoC_TestComponent_i, "Unable to retrieve RF-NoC block with ID: " << this->blockID);
         throw std::exception();
     } else {
@@ -99,7 +99,7 @@ int RFNoC_TestComponent_i::rxServiceFunction()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Perform RX, if necessary
-    if (this->rxStream) {
+    if (this->rxStream.get()) {
         // Don't bother doing anything until the SRI has been received
         if (not this->receivedSRI) {
             LOG_DEBUG(RFNoC_TestComponent_i, "RX Thread active but no SRI has been received");
@@ -149,7 +149,7 @@ int RFNoC_TestComponent_i::txServiceFunction()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Perform TX, if necessary
-    if (this->txStream) {
+    if (this->txStream.get()) {
         // Wait on input data
         bulkio::InShortPort::DataTransferType *packet = this->dataShort_in->getPacket(bulkio::Const::BLOCKING);
 
@@ -261,7 +261,7 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
 
     if (enable) {
         // Don't create an RX stream if it already exists
-        if (this->rxStream) {
+        if (this->rxStream.get()) {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempted to set RX streamer, but already streaming");
             return;
         }
@@ -291,7 +291,7 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         }
     } else {
         // Don't clean up the stream if it's not already running
-        if (not this->rxStream) {
+        if (not this->rxStream.get()) {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempted to unset RX streamer, but not streaming");
             return;
         }
@@ -325,7 +325,7 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
 
     if (enable) {
         // Don't create a TX stream if it already exists
-        if (this->txStream) {
+        if (this->txStream.get()) {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempted to set TX streamer, but already streaming");
             return;
         }
@@ -344,7 +344,7 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
         }
     } else {
         // Don't clean up the stream if it's not already running
-        if (not this->txStream) {
+        if (not this->txStream.get()) {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempted to unset TX streamer, but not streaming");
             return;
         }
@@ -377,7 +377,7 @@ void RFNoC_TestComponent_i::setUsrpAddress(uhd::device_addr_t usrpAddress)
     this->usrpAddress = usrpAddress;
 
     // Without a valid USRP, this component can't do anything
-    if (not usrp) {
+    if (not usrp.get()) {
         LOG_FATAL(RFNoC_TestComponent_i, "Received a USRP which is not RF-NoC compatible.");
         throw std::exception();
     }
@@ -415,7 +415,7 @@ void RFNoC_TestComponent_i::retrieveRxStream()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Release the old stream if necessary
-    if (this->rxStream) {
+    if (this->rxStream.get()) {
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Releasing old RX stream");
         this->rxStream.reset();
     }
@@ -451,7 +451,7 @@ void RFNoC_TestComponent_i::retrieveTxStream()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Release the old stream if necessary
-    if (this->txStream) {
+    if (this->txStream.get()) {
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Releasing old TX stream");
         this->txStream.reset();
     }
@@ -490,7 +490,7 @@ bool RFNoC_TestComponent_i::setArgs(std::vector<arg_struct> &newArgs)
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // This should never be necessary, but just in case...
-    if (not this->rfnocBlock) {
+    if (not this->rfnocBlock.get()) {
         LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Unable to set new arguments, RF-NoC block is not set");
         return false;
     }
