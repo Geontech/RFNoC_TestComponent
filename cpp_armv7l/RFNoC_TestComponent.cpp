@@ -232,6 +232,7 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
 {
     LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+    LOG_TRACE(RFNoC_TestComponent_i, "skfjaskldjfl");
 
     if (this->rxThread) {
         LOG_DEBUG(RFNoC_TestComponent_i, "Stopping RX Thread");
