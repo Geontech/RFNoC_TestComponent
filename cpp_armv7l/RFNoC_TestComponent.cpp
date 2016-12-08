@@ -242,6 +242,8 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
         }
 
         LOG_DEBUG(RFNoC_TestComponent_i, "RX Thread successfully stopped");
+    } else {
+        LOG_DEBUG(RFNoC_TestComponent_i, "RX Thread is NULL");
     }
 
     if (this->txThread) {
@@ -252,9 +254,13 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
         }
 
         LOG_DEBUG(RFNoC_TestComponent_i, "TX Thread successfully stopped");
+    } else {
+        LOG_DEBUG(RFNoC_TestComponent_i, "TX Thread is NULL");
     }
 
+    LOG_DEBUG(RFNoC_TestComponent_i, "Before base class stop");
     RFNoC_TestComponent_base::stop();
+    LOG_DEBUG(RFNoC_TestComponent_i, "After base class stop");
 }
 
 /*
