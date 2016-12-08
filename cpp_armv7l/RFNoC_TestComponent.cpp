@@ -46,10 +46,12 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
 
     // Release the threads if necessary
     if (this->rxThread) {
+        this->rxThread->stop();
         delete this->rxThread;
     }
 
     if (this->txThread) {
+        this->txThread->stop();
         delete this->txThread;
     }
 }
@@ -231,15 +233,23 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     if (this->rxThread) {
+        LOG_DEBUG(RFNoC_TestComponent_i, "Stopping RX Thread");
+
         if (not this->rxThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "RX Thread had to be killed");
         }
+
+        LOG_DEBUG(RFNoC_TestComponent_i, "RX Thread successfully stopped");
     }
 
     if (this->txThread) {
+        LOG_DEBUG(RFNoC_TestComponent_i, "Stopping TX Thread");
+
         if (not this->txThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "TX Thread had to be killed");
         }
+
+        LOG_DEBUG(RFNoC_TestComponent_i, "TX Thread successfully stopped");
     }
 
     RFNoC_TestComponent_base::stop();
