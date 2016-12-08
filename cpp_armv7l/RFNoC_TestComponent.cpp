@@ -234,6 +234,10 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
     LOG_TRACE(RFNoC_TestComponent_i, "skfjaskldjfl");
 
+    LOG_DEBUG(RFNoC_TestComponent_i, "Before base class stop");
+    RFNoC_TestComponent_base::stop();
+    LOG_DEBUG(RFNoC_TestComponent_i, "After base class stop");
+
     if (this->rxThread) {
         LOG_DEBUG(RFNoC_TestComponent_i, "Stopping RX Thread");
 
@@ -257,10 +261,6 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
     } else {
         LOG_DEBUG(RFNoC_TestComponent_i, "TX Thread is NULL");
     }
-
-    LOG_DEBUG(RFNoC_TestComponent_i, "Before base class stop");
-    RFNoC_TestComponent_base::stop();
-    LOG_DEBUG(RFNoC_TestComponent_i, "After base class stop");
 }
 
 /*
