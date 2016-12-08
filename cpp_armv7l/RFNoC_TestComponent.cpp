@@ -230,6 +230,7 @@ void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::Syst
  */
 void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::SystemException)
 {
+    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     if (this->rxThread) {
