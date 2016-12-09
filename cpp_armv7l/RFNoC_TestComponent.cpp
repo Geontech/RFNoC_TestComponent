@@ -388,18 +388,14 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
 }
 
 /*
- * A method which allows the persona to set the address of the USRP it is
- * using.
+ * A method which allows the persona to set the USRP it is using.
  */
-void RFNoC_TestComponent_i::setUsrpAddress(uhd::device_addr_t usrpAddress)
+void RFNoC_TestComponent_i::setUsrp(uhd::device3::sptr usrp)
 {
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
-    // Retrieve a pointer to the device
-    this->usrp = uhd::device3::make(usrpAddress);
-
-    // Save the address for later, if needed
-    this->usrpAddress = usrpAddress;
+    // Save the USRP for later
+    this->usrp = usrp;
 
     // Without a valid USRP, this component can't do anything
     if (not usrp.get()) {

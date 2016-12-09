@@ -37,7 +37,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         void setBlockIDCallback(blockIDCallback cb);
         void setRxStreamer(bool enable);
         void setTxStreamer(bool enable);
-        void setUsrpAddress(uhd::device_addr_t usrpAddress);
+        void setUsrp(uhd::device3::sptr usrp);
 
     private:
         // Property change listeners
@@ -65,7 +65,6 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         uhd::tx_streamer::sptr txStream;
         GenericThreadedComponent *txThread;
         uhd::device3::sptr usrp;
-        uhd::device_addr_t usrpAddress;
 };
 
 #endif // RFNOC_TESTCOMPONENT_I_IMPL_H
