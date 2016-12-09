@@ -263,6 +263,21 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
     }
 }
 
+void RFNoC_TestComponent_i::releaseObject() throw (CF::LifeCycle::ReleaseError, CORBA::SystemException)
+{
+    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+
+    releasePorts();
+    stopPropertyChangeMonitor();
+    // This is a singleton shared by all code running in this process
+    //redhawk::events::Manager::Terminate();
+    PortableServer::POA_ptr root_poa = ossie::corba::RootPOA();
+    PortableServer::ObjectId_var oid = root_poa->servant_to_id(this);
+    root_poa->deactivate_object(oid);
+
+    component_running.signal();
+}
+
 /*
  * A method which allows a callback to be set for the block ID changing. This
  * callback should point back to the persona to alert it of the component's

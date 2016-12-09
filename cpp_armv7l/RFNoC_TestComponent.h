@@ -33,6 +33,9 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         void start() throw (CF::Resource::StartError, CORBA::SystemException);
         void stop() throw (CF::Resource::StopError, CORBA::SystemException);
 
+        // Override releaseObject
+        void releaseObject() throw (CF::LifeCycle::ReleaseError, CORBA::SystemException);
+
         // Methods to be called by the persona, inherited from RFNoC_ComponentInterface
         void setBlockIDCallback(blockIDCallback cb);
         void setRxStreamer(bool enable);
