@@ -98,7 +98,7 @@ int RFNoC_TestComponent_i::rxServiceFunction()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Perform RX, if necessary
-    if (this->rxStreamStarted) {
+    if (this->rxStream.get()) {
         // Don't bother doing anything until the SRI has been received
         if (not this->receivedSRI) {
             LOG_DEBUG(RFNoC_TestComponent_i, "RX Thread active but no SRI has been received");
@@ -136,8 +136,6 @@ int RFNoC_TestComponent_i::rxServiceFunction()
         short *outputBuffer = (short *) this->output.data();
 
         this->dataShort_out->pushPacket(outputBuffer, this->output.size() * 2, rxTime, md.end_of_burst, this->sri.streamID._ptr);
-    } else {
-        startRxStream();
     }
 
     return NORMAL;
@@ -216,6 +214,8 @@ void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::Syst
     RFNoC_TestComponent_base::start();
 
     if (this->rxThread) {
+        startRxStream();
+
         this->rxThread->start();
     }
 
@@ -234,11 +234,11 @@ void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::System
     RFNoC_TestComponent_base::stop();
 
     if (this->rxThread) {
-        stopRxStream();
-
         if (not this->rxThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "RX Thread had to be killed");
         }
+
+        stopRxStream();
     }
 
     if (this->txThread) {
@@ -311,6 +311,8 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
 
         // If the component is already started, then start the RX receive thread
         if (this->_started) {
+            startRxStream();
+
             this->rxThread->start();
         }
     } else {
@@ -320,13 +322,13 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
             return;
         }
 
-        // Stop continuous streaming
-        stopRxStream();
-
         // Stop and delete the RX stream thread
         if (not this->rxThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "RX Thread had to be killed");
         }
+
+        // Stop continuous streaming
+        stopRxStream();
 
         // Release the RX stream pointer
         this->rxStream.reset();
