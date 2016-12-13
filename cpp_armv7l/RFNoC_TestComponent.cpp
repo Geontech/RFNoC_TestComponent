@@ -18,6 +18,7 @@ RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label
     RFNoC_TestComponent_base(uuid, label),
     blockIDChange(NULL),
     receivedSRI(false),
+    rxStreamStarted(false),
     rxThread(NULL),
     spp(1024),
     txThread(NULL)
@@ -33,11 +34,7 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Stop streaming
-    if (this->rxStream.get()) {
-        uhd::stream_cmd_t streamCmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
-
-        this->rxStream->issue_stream_cmd(streamCmd);
-    }
+    stopRxStream();
 
     // Reset the RF-NoC block
     if (this->rfnocBlock.get()) {
@@ -101,7 +98,7 @@ int RFNoC_TestComponent_i::rxServiceFunction()
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     // Perform RX, if necessary
-    if (this->rxStream.get()) {
+    if (this->rxStreamStarted) {
         // Don't bother doing anything until the SRI has been received
         if (not this->receivedSRI) {
             LOG_DEBUG(RFNoC_TestComponent_i, "RX Thread active but no SRI has been received");
@@ -139,6 +136,8 @@ int RFNoC_TestComponent_i::rxServiceFunction()
         short *outputBuffer = (short *) this->output.data();
 
         this->dataShort_out->pushPacket(outputBuffer, this->output.size() * 2, rxTime, md.end_of_burst, this->sri.streamID._ptr);
+    } else {
+        startRxStream();
     }
 
     return NORMAL;
@@ -230,42 +229,35 @@ void RFNoC_TestComponent_i::start() throw (CF::Resource::StartError, CORBA::Syst
  */
 void RFNoC_TestComponent_i::stop() throw (CF::Resource::StopError, CORBA::SystemException)
 {
-    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
-    LOG_TRACE(RFNoC_TestComponent_i, "skfjaskldjfl");
 
-    LOG_DEBUG(RFNoC_TestComponent_i, "Before base class stop");
     RFNoC_TestComponent_base::stop();
-    LOG_DEBUG(RFNoC_TestComponent_i, "After base class stop");
 
     if (this->rxThread) {
-        LOG_DEBUG(RFNoC_TestComponent_i, "Stopping RX Thread");
+        stopRxStream();
 
         if (not this->rxThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "RX Thread had to be killed");
         }
-
-        LOG_DEBUG(RFNoC_TestComponent_i, "RX Thread successfully stopped");
-    } else {
-        LOG_DEBUG(RFNoC_TestComponent_i, "RX Thread is NULL");
     }
 
     if (this->txThread) {
-        LOG_DEBUG(RFNoC_TestComponent_i, "Stopping TX Thread");
-
         if (not this->txThread->stop()) {
             LOG_WARN(RFNoC_TestComponent_i, "TX Thread had to be killed");
         }
-
-        LOG_DEBUG(RFNoC_TestComponent_i, "TX Thread successfully stopped");
-    } else {
-        LOG_DEBUG(RFNoC_TestComponent_i, "TX Thread is NULL");
     }
 }
 
 void RFNoC_TestComponent_i::releaseObject() throw (CF::LifeCycle::ReleaseError, CORBA::SystemException)
 {
     LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+
+    // This function clears the component running condition so main shuts down everything
+    try {
+        stop();
+    } catch (CF::Resource::StopError& ex) {
+        // TODO - this should probably be logged instead of ignored
+    }
 
     releasePorts();
     stopPropertyChangeMonitor();
@@ -314,14 +306,6 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         // Create the receive buffer
         this->output.resize(10*spp);
 
-        // Start continuous streaming immediately
-        uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
-        stream_cmd.num_samps = 0;
-        stream_cmd.stream_now = true;
-        stream_cmd.time_spec = uhd::time_spec_t();
-
-        this->rxStream->issue_stream_cmd(stream_cmd);
-
         // Create the RX receive thread
         this->rxThread = new GenericThreadedComponent(boost::bind(&RFNoC_TestComponent_i::rxServiceFunction, this));
 
@@ -337,9 +321,7 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         }
 
         // Stop continuous streaming
-        uhd::stream_cmd_t streamCmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
-
-        this->rxStream->issue_stream_cmd(streamCmd);
+        stopRxStream();
 
         // Stop and delete the RX stream thread
         if (not this->rxThread->stop()) {
@@ -515,6 +497,37 @@ void RFNoC_TestComponent_i::retrieveTxStream()
         LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to retrieve TX stream: " << e.what());
     } catch(...) {
         LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Unexpected error occurred while retrieving TX stream");
+    }
+}
+
+void RFNoC_TestComponent_i::startRxStream()
+{
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    if (not this->rxStreamStarted) {
+        // Start continuous streaming
+        uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
+        stream_cmd.num_samps = 0;
+        stream_cmd.stream_now = true;
+        stream_cmd.time_spec = uhd::time_spec_t();
+
+        this->rxStream->issue_stream_cmd(stream_cmd);
+
+        this->rxStreamStarted = true;
+    }
+}
+
+void RFNoC_TestComponent_i::stopRxStream()
+{
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    if (this->rxStreamStarted) {
+        // Start continuous streaming
+        uhd::stream_cmd_t stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
+
+        this->rxStream->issue_stream_cmd(stream_cmd);
+
+        this->rxStreamStarted = false;
     }
 }
 

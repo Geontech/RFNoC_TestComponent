@@ -52,6 +52,8 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
     private:
         void retrieveRxStream();
         void retrieveTxStream();
+        void startRxStream();
+        void stopRxStream();
 
         // Internal method for setting the arguments on the block
         bool setArgs(std::vector<arg_struct> &newArgs);
@@ -62,6 +64,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         bool receivedSRI;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
         uhd::rx_streamer::sptr rxStream;
+        bool rxStreamStarted;
         GenericThreadedComponent *rxThread;
         size_t spp;
         BULKIO::StreamSRI sri;
