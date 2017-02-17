@@ -37,7 +37,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         void releaseObject() throw (CF::LifeCycle::ReleaseError, CORBA::SystemException);
 
         // Methods to be called by the persona, inherited from RFNoC_ComponentInterface
-        void setBlockIDCallback(blockIDCallback cb);
+        void setBlockInfoCallback(blockInfoCallback cb);
         void setRxStreamer(bool enable);
         void setTxStreamer(bool enable);
         void setUsrp(uhd::device3::sptr usrp);
@@ -59,7 +59,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         bool setArgs(std::vector<arg_struct> &newArgs);
 
     private:
-        blockIDCallback blockIDChange;
+        blockInfoCallback blockInfoChange;
         std::vector<std::complex<short> > output;
         bool receivedSRI;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;

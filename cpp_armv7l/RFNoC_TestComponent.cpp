@@ -16,7 +16,7 @@ PREPARE_LOGGING(RFNoC_TestComponent_i)
  */
 RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label) :
     RFNoC_TestComponent_base(uuid, label),
-    blockIDChange(NULL),
+    blockInfoChange(NULL),
     receivedSRI(false),
     rxStreamStarted(false),
     rxThread(NULL),
@@ -78,9 +78,16 @@ void RFNoC_TestComponent_i::constructor()
     this->addPropertyListener(this->args, this, &RFNoC_TestComponent_i::argsChanged);
 
     // Alert the persona of the block ID(s)
-    if (this->blockIDChange) {
-        std::vector<uhd::rfnoc::block_id_t> blocks(1, this->blockID);
-        this->blockIDChange(this->_identifier, blocks);
+    if (this->blockInfoChange) {
+        std::vector<BlockInfo> blocks;
+
+        BlockInfo tmp;
+        tmp.blockID = this->rfnocBlock->get_block_id();
+        tmp.port = 0;
+
+        blocks.push_back(tmp);
+
+        this->blockInfoChange(this->_identifier, blocks);
     }
 
     // Add an SRI change listener
@@ -275,11 +282,11 @@ void RFNoC_TestComponent_i::releaseObject() throw (CF::LifeCycle::ReleaseError, 
  * callback should point back to the persona to alert it of the component's
  * block IDs
  */
-void RFNoC_TestComponent_i::setBlockIDCallback(blockIDCallback cb)
+void RFNoC_TestComponent_i::setBlockInfoCallback(blockInfoCallback cb)
 {
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
-    this->blockIDChange = cb;
+    this->blockInfoChange = cb;
 }
 
 /*
