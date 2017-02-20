@@ -93,6 +93,10 @@ void RFNoC_TestComponent_i::constructor()
     // Add an SRI change listener
     this->dataShort_in->addStreamListener(this, &RFNoC_TestComponent_i::streamChanged);
 
+    // Add a stream listener
+    this->dataShort_out->setNewConnectListener(this, &RFNoC_TestComponent_i::newConnection);
+    this->dataShort_out->setNewDisconnectListener(this, &RFNoC_TestComponent_i::newDisconnection);
+
     // Preallocate the vector
     this->output.resize(10000);
 }
@@ -289,6 +293,34 @@ void RFNoC_TestComponent_i::setBlockInfoCallback(blockInfoCallback cb)
     this->blockInfoChange = cb;
 }
 
+void RFNoC_TestComponent_i::setNewIncomingConnectionCallback(connectionCallback cb)
+{
+    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+
+    this->newIncomingConnectionCallback = cb;
+}
+
+void RFNoC_TestComponent_i::setNewOutgoingConnectionCallback(connectionCallback cb)
+{
+    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+
+    this->newOutgoingConnectionCallback = cb;
+}
+
+void RFNoC_TestComponent_i::setRemovedIncomingConnectionCallback(connectionCallback cb)
+{
+    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+
+    this->removedIncomingConnectionCallback = cb;
+}
+
+void RFNoC_TestComponent_i::setRemovedOutgoingConnectionCallback(connectionCallback cb)
+{
+    LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
+
+    this->removedOutgoingConnectionCallback = cb;
+}
+
 /*
  * A method which allows the persona to set this component as an RX streamer.
  * This means the component should retrieve the data from block and then send
@@ -427,6 +459,21 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
 {
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
+    std::map<std::string, bool>::iterator it = this->streamMap.find(stream.streamID());
+
+    bool newIncomingConnection = (it == this->streamMap.end());
+    bool removedIncomingConnection =(it != this->streamMap.end() and stream.eos());
+
+    if (newIncomingConnection) {
+        if (this->newIncomingConnectionCallback) {
+            this->newIncomingConnectionCallback(stream.streamID());
+        }
+    } else if (removedIncomingConnection) {
+        if (this->removedOutgoingConnectionCallback) {
+            this->removedOutgoingConnectionCallback(stream.streamID());
+        }
+    }
+
     this->sri = stream.sri();
 
     // Default to complex
@@ -435,6 +482,24 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
     this->dataShort_out->pushSRI(this->sri);
 
     this->receivedSRI = true;
+}
+
+void RFNoC_TestComponent_i::newConnection(const char *connectionID)
+{
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    if (this->newOutgoingConnectionCallback) {
+        this->newOutgoingConnectionCallback(connectionID);
+    }
+}
+
+void RFNoC_TestComponent_i::newDisconnection(const char *connectionID)
+{
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    if (this->removedOutgoingConnectionCallback) {
+        this->removedOutgoingConnectionCallback(connectionID);
+    }
 }
 
 void RFNoC_TestComponent_i::retrieveRxStream()

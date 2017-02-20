@@ -38,6 +38,10 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
 
         // Methods to be called by the persona, inherited from RFNoC_ComponentInterface
         void setBlockInfoCallback(blockInfoCallback cb);
+        void setNewIncomingConnectionCallback(connectionCallback cb);
+        void setNewOutgoingConnectionCallback(connectionCallback cb);
+        void setRemovedIncomingConnectionCallback(connectionCallback cb);
+        void setRemovedOutgoingConnectionCallback(connectionCallback cb);
         void setRxStreamer(bool enable);
         void setTxStreamer(bool enable);
         void setUsrp(uhd::device3::sptr usrp);
@@ -50,6 +54,8 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         void streamChanged(bulkio::InShortPort::StreamType stream);
 
     private:
+        void newConnection(const char *connectionID);
+        void newDisconnection(const char *connectionID);
         void retrieveRxStream();
         void retrieveTxStream();
         void startRxStream();
@@ -60,6 +66,10 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
 
     private:
         blockInfoCallback blockInfoChange;
+        connectionCallback newIncomingConnectionCallback;
+        connectionCallback newOutgoingConnectionCallback;
+        connectionCallback removedIncomingConnectionCallback;
+        connectionCallback removedOutgoingConnectionCallback;
         std::vector<std::complex<short> > output;
         bool receivedSRI;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
@@ -68,6 +78,7 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
         GenericThreadedComponent *rxThread;
         size_t spp;
         BULKIO::StreamSRI sri;
+        std::map<std::string, bool> streamMap;
         uhd::tx_streamer::sptr txStream;
         GenericThreadedComponent *txThread;
         uhd::device3::sptr usrp;
