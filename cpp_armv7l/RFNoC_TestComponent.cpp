@@ -20,7 +20,7 @@ RFNoC_TestComponent_i::RFNoC_TestComponent_i(const char *uuid, const char *label
     receivedSRI(false),
     rxStreamStarted(false),
     rxThread(NULL),
-    spp(1024),
+    spp(512),
     txThread(NULL)
 {
     LOG_TRACE(RFNoC_TestComponent_i, __PRETTY_FUNCTION__);
@@ -522,7 +522,7 @@ void RFNoC_TestComponent_i::retrieveRxStream()
     streamer_args["block_id"] = this->blockID;
 
     // Get the spp from the block
-    this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 1024);
+    this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 512);
 
     streamer_args["spp"] = boost::lexical_cast<std::string>(this->spp);
 
@@ -558,7 +558,7 @@ void RFNoC_TestComponent_i::retrieveTxStream()
     streamer_args["block_id"] = this->blockID;
 
     // Get the spp from the block
-    this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 1024);
+    this->spp = this->rfnocBlock->get_args().cast<size_t>("spp", 512);
 
     streamer_args["spp"] = boost::lexical_cast<std::string>(this->spp);
 
