@@ -467,6 +467,8 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
     bool removedIncomingConnection =(it != this->streamMap.end() and stream.eos());
 
     if (newIncomingConnection) {
+        boost::this_thread::sleep(1);
+
         if (this->newIncomingConnectionCallback) {
             this->newIncomingConnectionCallback(stream.streamID());
         }
