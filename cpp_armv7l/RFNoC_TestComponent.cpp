@@ -131,6 +131,8 @@ int RFNoC_TestComponent_i::rxServiceFunction()
             LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Overflow while streaming");
         } else if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
             LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << md.strerror());
+            this->rxStreamStarted = false;
+            startRxStream();
             return NOOP;
         }
 
