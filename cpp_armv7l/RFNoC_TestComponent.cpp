@@ -193,19 +193,13 @@ int RFNoC_TestComponent_i::txServiceFunction()
 
         while (samplesToSend != 0) {
             // Send the data
-            size_t num_tx_samps = this->txStream->send(block + samplesSent, samplesToSend, md);
+            size_t num_tx_samps = this->txStream->send(block + samplesSent, samplesToSend, md, 1);
 
             samplesSent += num_tx_samps;
             samplesToSend -= num_tx_samps;
 
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "TX Thread Sent " << num_tx_samps << " samples");
         }
-
-        /*if (blockSize != 0 and num_tx_samps == 0) {
-            LOG_DEBUG(RFNoC_TestComponent_i, "The TX stream is no longer valid, obtaining a new one");
-
-            //retrieveTxStream();
-        }*/
 
         // On EOS, forward to the RF-NoC block
         if (packet->EOS) {
