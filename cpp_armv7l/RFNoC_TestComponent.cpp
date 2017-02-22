@@ -489,7 +489,9 @@ void RFNoC_TestComponent_i::newConnection(const char *connectionID)
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     if (this->newOutgoingConnectionCallback) {
-        this->newOutgoingConnectionCallback(connectionID, this->dataShort_out->_hash(HASH_SIZE));
+        BULKIO::UsesPortStatisticsProvider_ptr port = BULKIO::UsesPortStatisticsProvider::_narrow(this->getPort(this->dataShort_out->getName().c_str()));
+
+        this->newOutgoingConnectionCallback(connectionID, port->_hash(HASH_SIZE));
     }
 }
 
@@ -498,7 +500,9 @@ void RFNoC_TestComponent_i::newDisconnection(const char *connectionID)
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     if (this->removedOutgoingConnectionCallback) {
-        this->removedOutgoingConnectionCallback(connectionID, this->dataShort_out->_hash(HASH_SIZE));
+        BULKIO::UsesPortStatisticsProvider_ptr port = BULKIO::UsesPortStatisticsProvider::_narrow(this->getPort(this->dataShort_out->getName().c_str()));
+
+        this->removedOutgoingConnectionCallback(connectionID, port->_hash(HASH_SIZE));
     }
 }
 
