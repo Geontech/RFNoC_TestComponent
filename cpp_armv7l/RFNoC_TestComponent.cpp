@@ -188,16 +188,24 @@ int RFNoC_TestComponent_i::txServiceFunction()
         md.has_time_spec = true;
         md.time_spec = uhd::time_spec_t(time.twsec, time.tfsec);
 
-        // Send the data
-        size_t num_tx_samps = this->txStream->send(block, blockSize, md);
+        size_t samplesSent = 0;
+        size_t samplesToSend = blockSize;
 
-        if (blockSize != 0 and num_tx_samps == 0) {
-            LOG_DEBUG(RFNoC_TestComponent_i, "The TX stream is no longer valid, obtaining a new one");
+        while (samplesToSend != 0) {
+            // Send the data
+            size_t num_tx_samps = this->txStream->send(block + samplesSent, samplesToSend, md);
 
-            retrieveTxStream();
+            samplesSent += num_tx_samps;
+            samplesToSend -= num_tx_samps;
+
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "TX Thread Sent " << num_tx_samps << " samples");
         }
 
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "TX Thread Sent " << num_tx_samps << " samples");
+        /*if (blockSize != 0 and num_tx_samps == 0) {
+            LOG_DEBUG(RFNoC_TestComponent_i, "The TX stream is no longer valid, obtaining a new one");
+
+            //retrieveTxStream();
+        }*/
 
         // On EOS, forward to the RF-NoC block
         if (packet->EOS) {
