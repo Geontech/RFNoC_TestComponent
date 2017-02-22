@@ -467,7 +467,20 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
     bool removedIncomingConnection =(it != this->streamMap.end() and stream.eos());
 
     if (newIncomingConnection) {
-        boost::this_thread::sleep(boost::posix_time::seconds(1));
+        bulkio::InShortPort::StreamList list;
+
+        list.push_back(stream);
+
+        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Polling stream...");
+
+        bulkio::InShortPort::StreamList returned = this->dataShort_in->pollStreams(list, bulkio::Const::BLOCKING);
+
+        if (returned.empty()) {
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Polled stream, got nothing");
+            return;
+        } else {
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Polled stream and it went great");
+        }
 
         if (this->newIncomingConnectionCallback) {
             this->newIncomingConnectionCallback(stream.streamID());
