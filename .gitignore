@@ -18,6 +18,8 @@ cpp_armv7l/libRFNoC_TestComponent_la-RFNoC_TestComponent.lo
 cpp_armv7l/libRFNoC_TestComponent_la-RFNoC_TestComponent.o
 cpp_armv7l/libRFNoC_TestComponent_la-RFNoC_TestComponent_base.lo
 cpp_armv7l/libRFNoC_TestComponent_la-RFNoC_TestComponent_base.o
+cpp_armv7l/libRFNoC_TestComponent_la-RFNoC_Utils.lo
+cpp_armv7l/libRFNoC_TestComponent_la-RFNoC_Utils.o
 cpp_armv7l/libRFNoC_TestComponent_la-main.lo
 cpp_armv7l/libRFNoC_TestComponent_la-main.o
 cpp_armv7l/libtool

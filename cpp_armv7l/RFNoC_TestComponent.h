@@ -10,6 +10,9 @@
 #include "GenericThreadedComponent.h"
 #include "RFNoC_Component.h"
 
+// The size of the port hashes
+const CORBA::ULong HASH_SIZE = 1000000;
+
 /*
  * The class for the component
  */

@@ -459,35 +459,18 @@ void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> &oldValue,
 
 void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream)
 {
-    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
-
-    std::map<std::string, bool>::iterator it = this->streamMap.find(stream.streamID());
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);    std::map<std::string, bool>::iterator it = this->streamMap.find(stream.streamID());
 
     bool newIncomingConnection = (it == this->streamMap.end());
     bool removedIncomingConnection =(it != this->streamMap.end() and stream.eos());
 
     if (newIncomingConnection) {
-        bulkio::InShortPort::StreamList list;
-
-        list.push_back(stream);
-
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Polling stream...");
-
-        bulkio::InShortPort::StreamList returned = this->dataShort_in->pollStreams(list, bulkio::Const::BLOCKING);
-
-        if (returned.empty()) {
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Polled stream, got nothing");
-            return;
-        } else {
-            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Polled stream and it went great");
-        }
-
         if (this->newIncomingConnectionCallback) {
-            this->newIncomingConnectionCallback(stream.streamID());
+            this->newIncomingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
         }
     } else if (removedIncomingConnection) {
         if (this->removedOutgoingConnectionCallback) {
-            this->removedOutgoingConnectionCallback(stream.streamID());
+            this->removedOutgoingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
         }
     }
 
@@ -506,7 +489,7 @@ void RFNoC_TestComponent_i::newConnection(const char *connectionID)
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     if (this->newOutgoingConnectionCallback) {
-        this->newOutgoingConnectionCallback(connectionID);
+        this->newOutgoingConnectionCallback(connectionID, this->dataShort_out->_hash(HASH_SIZE));
     }
 }
 
@@ -515,7 +498,7 @@ void RFNoC_TestComponent_i::newDisconnection(const char *connectionID)
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
     if (this->removedOutgoingConnectionCallback) {
-        this->removedOutgoingConnectionCallback(connectionID);
+        this->removedOutgoingConnectionCallback(connectionID, this->dataShort_out->_hash(HASH_SIZE));
     }
 }
 
