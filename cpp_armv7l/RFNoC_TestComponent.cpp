@@ -82,7 +82,7 @@ void RFNoC_TestComponent_i::constructor()
         std::vector<BlockInfo> blocks;
 
         BlockInfo tmp;
-        tmp.blockID = this->rfnocBlock->get_block_id();
+        tmp.blockID = this->rfnocBlock->unique_id();
         tmp.port = 0;
 
         blocks.push_back(tmp);
