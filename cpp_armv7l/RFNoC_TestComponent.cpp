@@ -112,7 +112,7 @@ int RFNoC_TestComponent_i::rxServiceFunction()
     if (this->rxStream.get()) {
         // Don't bother doing anything until the SRI has been received
         if (not this->receivedSRI) {
-            LOG_DEBUG(RFNoC_TestComponent_i, "RX Thread active but no SRI has been received");
+            LOG_TRACE(RFNoC_TestComponent_i, "RX Thread active but no SRI has been received");
             return NOOP;
         }
 
