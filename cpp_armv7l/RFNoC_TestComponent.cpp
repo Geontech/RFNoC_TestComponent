@@ -355,7 +355,7 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         retrieveRxStream();
 
         // Create the receive buffer
-        this->output.resize(10*spp);
+        this->output.resize((0.8 * bulkio::Const::MAX_TRANSFER_BYTES / sizeof(std::complex<short>)));
 
         // Create the RX receive thread
         this->rxThread = new GenericThreadedComponent(boost::bind(&RFNoC_TestComponent_i::rxServiceFunction, this));
