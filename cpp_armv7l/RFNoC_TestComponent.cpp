@@ -119,25 +119,33 @@ int RFNoC_TestComponent_i::rxServiceFunction()
         // Recv from the block
         uhd::rx_metadata_t md;
 
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
+        size_t samplesRead = 0;
+        size_t samplesToRead = this->output.size();
 
-        size_t num_rx_samps = this->rxStream->recv(&output.front(), output.size(), md, 3.0);
+        while (samplesRead < this->output.size()) {
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
 
-        // Check the meta data for error codes
-        if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
-            LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Timeout while streaming");
-            return NOOP;
-        } else if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_OVERFLOW) {
-            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Overflow while streaming");
-        } else if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
-            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << md.strerror());
-            this->rxStreamStarted = false;
-            startRxStream();
-            return NOOP;
+            size_t num_rx_samps = this->rxStream->recv(&output.front() + samplesRead, samplesToRead, md, 3.0);
+
+            // Check the meta data for error codes
+            if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
+                LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Timeout while streaming");
+                return NOOP;
+            } else if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_OVERFLOW) {
+                LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Overflow while streaming");
+            } else if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
+                LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << md.strerror());
+                this->rxStreamStarted = false;
+                startRxStream();
+                return NOOP;
+            }
+
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "RX Thread Requested " << samplesToRead << " samples");
+            LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "RX Thread Received " << num_rx_samps << " samples");
+
+            samplesRead += num_rx_samps;
+            samplesToRead -= num_rx_samps;
         }
-
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "RX Thread Requested " << output.size() << " samples");
-        LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "RX Thread Received " << num_rx_samps << " samples");
 
         // Get the time stamps from the meta data
         BULKIO::PrecisionUTCTime rxTime;
