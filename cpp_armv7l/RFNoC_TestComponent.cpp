@@ -56,6 +56,8 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
         }
     }
 
+    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "A");
+
     // Reset the RX stream shared pointer
     if (this->rxStream.get()) {
         try {
@@ -65,6 +67,8 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
         }
     }
 
+    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "B");
+
     // Reset the TX stream shared pointer
     if (this->txStream.get()) {
         try {
@@ -73,6 +77,8 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
             LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to reset txStream shared pointer");
         }
     }
+
+    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "C");
 }
 
 /*
