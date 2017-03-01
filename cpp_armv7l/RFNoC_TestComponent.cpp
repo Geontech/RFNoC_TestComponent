@@ -36,15 +36,6 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
     // Stop streaming
     stopRxStream();
 
-    // Reset the RF-NoC block
-    if (this->rfnocBlock.get()) {
-        try {
-            this->rfnocBlock->clear();
-        } catch(...) {
-            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to clear block");
-        }
-    }
-
     // Release the threads if necessary
     if (this->rxThread) {
         this->rxThread->stop();
@@ -54,6 +45,33 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
     if (this->txThread) {
         this->txThread->stop();
         delete this->txThread;
+    }
+
+    // Reset the RF-NoC block
+    if (this->rfnocBlock.get()) {
+        try {
+            this->rfnocBlock->clear();
+        } catch(...) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to clear block");
+        }
+    }
+
+    // Reset the RX stream shared pointer
+    if (this->rxStream.get()) {
+        try {
+            this->rxStream.reset();
+        } catch(...) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to reset rxStream shared pointer");
+        }
+    }
+
+    // Reset the TX stream shared pointer
+    if (this->txStream.get()) {
+        try {
+            this->txStream.reset();
+        } catch(...) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to reset txStream shared pointer");
+        }
     }
 }
 
