@@ -38,7 +38,11 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
 
     // Reset the RF-NoC block
     if (this->rfnocBlock.get()) {
-        this->rfnocBlock->clear();
+        try {
+            this->rfnocBlock->clear();
+        } catch(...) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to clear block");
+        }
     }
 
     // Release the threads if necessary
