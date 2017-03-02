@@ -197,8 +197,6 @@ int RFNoC_TestComponent_i::rxServiceFunction()
  */
 int RFNoC_TestComponent_i::txServiceFunction()
 {
-    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
-
     // Perform TX, if necessary
     if (this->txStream.get()) {
         // Wait on input data
@@ -499,7 +497,9 @@ void RFNoC_TestComponent_i::argsChanged(const std::vector<arg_struct> &oldValue,
 
 void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream)
 {
-    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);    std::map<std::string, bool>::iterator it = this->streamMap.find(stream.streamID());
+    LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
+
+    std::map<std::string, bool>::iterator it = this->streamMap.find(stream.streamID());
 
     bool newIncomingConnection = (it == this->streamMap.end());
     bool removedIncomingConnection =(it != this->streamMap.end() and stream.eos());
@@ -508,10 +508,14 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
         if (this->newIncomingConnectionCallback) {
             this->newIncomingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
         }
+
+        this->streamMap[stream.streamID()] = true;
     } else if (removedIncomingConnection) {
-        if (this->removedOutgoingConnectionCallback) {
-            this->removedOutgoingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
+        if (this->removedIncomingConnectionCallback) {
+            this->removedIncomingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
         }
+
+        this->streamMap.erase(it);
     }
 
     this->sri = stream.sri();
