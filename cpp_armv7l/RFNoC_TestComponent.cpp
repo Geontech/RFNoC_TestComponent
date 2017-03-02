@@ -658,6 +658,14 @@ void RFNoC_TestComponent_i::stopRxStream()
         this->rxStream->issue_stream_cmd(stream_cmd);
 
         this->rxStreamStarted = false;
+
+        // Run recv until nothing is left
+        uhd::rx_metadata_t md;
+        int num_post_samps = 0;
+
+        do {
+            num_post_samps = this->rxStream->recv(&this->output.front(), this->output.size(), md, 3.0);
+        } while(num_post_samps and md.error_code == uhd::rx_metadata_t::ERROR_CODE_NONE);
     }
 }
 
