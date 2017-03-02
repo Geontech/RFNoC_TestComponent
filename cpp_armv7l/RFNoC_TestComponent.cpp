@@ -505,12 +505,16 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
     bool removedIncomingConnection =(it != this->streamMap.end() and stream.eos());
 
     if (newIncomingConnection) {
+        LOG_DEBUG(RFNoC_TestComponent_i, "New incoming connection");
+
         if (this->newIncomingConnectionCallback) {
             this->newIncomingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
         }
 
         this->streamMap[stream.streamID()] = true;
     } else if (removedIncomingConnection) {
+        LOG_DEBUG(RFNoC_TestComponent_i, "Removed incoming connection");
+
         if (this->removedIncomingConnectionCallback) {
             this->removedIncomingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
         }
@@ -518,12 +522,16 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
         this->streamMap.erase(it);
     }
 
+    LOG_DEBUG(RFNoC_TestComponent_i, "Got SRI for stream ID: " << stream.streamID());
+
     this->sri = stream.sri();
 
     // Default to complex
     this->sri.mode = 1;
 
     this->dataShort_out->pushSRI(this->sri);
+
+    LOG_DEBUG(RFNoC_TestComponent_i, "Pushed stream ID to port");
 
     this->receivedSRI = true;
 }
