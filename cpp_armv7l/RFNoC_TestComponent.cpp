@@ -47,15 +47,6 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
         delete this->txThread;
     }
 
-    // Reset the RF-NoC block
-    if (this->rfnocBlock.get()) {
-        try {
-            this->rfnocBlock->clear();
-        } catch(...) {
-            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to clear block");
-        }
-    }
-
     LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "A");
 
     // Reset the RX stream shared pointer
@@ -79,6 +70,17 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
     }
 
     LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "C");
+
+    // Reset the RF-NoC block
+    if (this->rfnocBlock.get()) {
+        try {
+            this->rfnocBlock->clear();
+        } catch(...) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to clear block");
+        }
+    }
+
+    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "D");
 }
 
 /*
