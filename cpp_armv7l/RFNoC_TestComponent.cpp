@@ -410,6 +410,7 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         stopRxStream();
 
         // Release the RX stream pointer
+        LOG_DEBUG(RFNoC_TestComponent_i, "Resetting RX stream");
         this->rxStream.reset();
 
         delete this->rxThread;
@@ -663,9 +664,13 @@ void RFNoC_TestComponent_i::stopRxStream()
         uhd::rx_metadata_t md;
         int num_post_samps = 0;
 
+        LOG_DEBUG(RFNoC_TestComponent_i, "Emptying receive queue...");
+
         do {
             num_post_samps = this->rxStream->recv(&this->output.front(), this->output.size(), md, 3.0);
         } while(num_post_samps and md.error_code == uhd::rx_metadata_t::ERROR_CODE_NONE);
+
+        LOG_DEBUG(RFNoC_TestComponent_i, "Emptied receive queue");
     }
 }
 
