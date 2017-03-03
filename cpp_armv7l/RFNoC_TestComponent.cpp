@@ -155,7 +155,7 @@ int RFNoC_TestComponent_i::rxServiceFunction()
         while (samplesRead < this->output.size()) {
             LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Calling recv on the rx_stream");
 
-            size_t num_rx_samps = this->rxStream->recv(&output.front() + samplesRead, samplesToRead, md, 3.0);
+            size_t num_rx_samps = this->rxStream->recv(&output.front() + samplesRead, samplesToRead, md, 1.0);
 
             // Check the meta data for error codes
             if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
@@ -667,7 +667,7 @@ void RFNoC_TestComponent_i::stopRxStream()
         LOG_DEBUG(RFNoC_TestComponent_i, "Emptying receive queue...");
 
         do {
-            num_post_samps = this->rxStream->recv(&this->output.front(), this->output.size(), md, 3.0);
+            num_post_samps = this->rxStream->recv(&this->output.front(), this->output.size(), md, 1.0);
         } while(num_post_samps and md.error_code == uhd::rx_metadata_t::ERROR_CODE_NONE);
 
         LOG_DEBUG(RFNoC_TestComponent_i, "Emptied receive queue");
