@@ -59,8 +59,8 @@ class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_Comp
     private:
         void newConnection(const char *connectionID);
         void newDisconnection(const char *connectionID);
-        void retrieveRxStream();
-        void retrieveTxStream();
+        bool retrieveRxStream();
+        bool retrieveTxStream();
         void startRxStream();
         void stopRxStream();
 

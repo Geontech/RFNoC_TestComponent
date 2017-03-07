@@ -380,7 +380,10 @@ void RFNoC_TestComponent_i::setRxStreamer(bool enable)
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempting to set RX streamer");
 
         // Get the RX stream
-        retrieveRxStream();
+        if (not retrieveRxStream()) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to retrieve RX stream");
+            return;
+        }
 
         // Create the receive buffer
         this->output.resize((0.8 * bulkio::Const::MAX_TRANSFER_BYTES / sizeof(std::complex<short>)));
@@ -437,7 +440,10 @@ void RFNoC_TestComponent_i::setTxStreamer(bool enable)
         LOG_DEBUG(RFNoC_TestComponent_i, this->blockID << ": " << "Attempting to set TX streamer");
 
         // Get the TX stream
-        retrieveTxStream();
+        if (not retrieveTxStream()) {
+            LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to retrieve TX stream");
+            return;
+        }
 
         // Create the TX transmit thread
         this->txThread = new GenericThreadedComponent(boost::bind(&RFNoC_TestComponent_i::txServiceFunction, this));
@@ -559,7 +565,7 @@ void RFNoC_TestComponent_i::newDisconnection(const char *connectionID)
     }
 }
 
-void RFNoC_TestComponent_i::retrieveRxStream()
+bool RFNoC_TestComponent_i::retrieveRxStream()
 {
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
@@ -590,12 +596,16 @@ void RFNoC_TestComponent_i::retrieveRxStream()
         this->rxStream = this->usrp->get_rx_stream(stream_args);
     } catch(uhd::runtime_error &e) {
         LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to retrieve RX stream: " << e.what());
+        return false;
     } catch(...) {
         LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Unexpected error occurred while retrieving RX stream");
+        return false;
     }
+
+    return true;
 }
 
-void RFNoC_TestComponent_i::retrieveTxStream()
+bool RFNoC_TestComponent_i::retrieveTxStream()
 {
     LOG_TRACE(RFNoC_TestComponent_i, this->blockID << ": " << __PRETTY_FUNCTION__);
 
@@ -626,9 +636,13 @@ void RFNoC_TestComponent_i::retrieveTxStream()
         this->txStream = this->usrp->get_tx_stream(stream_args);
     } catch(uhd::runtime_error &e) {
         LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to retrieve TX stream: " << e.what());
+        return false;
     } catch(...) {
         LOG_ERROR(RFNoC_TestComponent_i, this->blockID << ": " << "Unexpected error occurred while retrieving TX stream");
+        return false;
     }
+
+    return true;
 }
 
 void RFNoC_TestComponent_i::startRxStream()
