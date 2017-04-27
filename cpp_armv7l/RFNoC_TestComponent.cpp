@@ -47,8 +47,6 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
         delete this->txThread;
     }
 
-    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "A");
-
     // Reset the RX stream shared pointer
     if (this->rxStream.get()) {
         try {
@@ -57,8 +55,6 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
             LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to reset rxStream shared pointer");
         }
     }
-
-    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "B");
 
     // Reset the TX stream shared pointer
     if (this->txStream.get()) {
@@ -69,8 +65,6 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
         }
     }
 
-    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "C");
-
     // Reset the RF-NoC block
     if (this->rfnocBlock.get()) {
         try {
@@ -79,8 +73,6 @@ RFNoC_TestComponent_i::~RFNoC_TestComponent_i()
             LOG_WARN(RFNoC_TestComponent_i, this->blockID << ": " << "Failed to clear block");
         }
     }
-
-    LOG_INFO(RFNoC_TestComponent_i, this->blockID << ": " << "D");
 }
 
 /*
@@ -527,6 +519,8 @@ void RFNoC_TestComponent_i::streamChanged(bulkio::InShortPort::StreamType stream
         }
 
         this->streamMap.erase(it);
+    } else {
+        LOG_DEBUG(RFNoC_TestComponent_i, "Existing connection changed");
     }
 
     LOG_DEBUG(RFNoC_TestComponent_i, "Got SRI for stream ID: " << stream.streamID());
