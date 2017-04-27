@@ -112,6 +112,10 @@ void RFNoC_TestComponent_i::constructor()
         this->blockInfoChange(this->_identifier, blocks);
     }
 
+    // Set the logger for the ports
+    this->dataShort_in->setLogger(this->getLogger());
+    this->dataShort_out->setLogger(this->getLogger());
+
     // Add an SRI change listener
     this->dataShort_in->addStreamListener(this, &RFNoC_TestComponent_i::streamChanged);
 
