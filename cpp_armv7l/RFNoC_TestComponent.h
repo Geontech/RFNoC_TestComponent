@@ -1,90 +1,85 @@
 #ifndef RFNOC_TESTCOMPONENT_I_IMPL_H
 #define RFNOC_TESTCOMPONENT_I_IMPL_H
 
+// Base Include(s)
 #include "RFNoC_TestComponent_base.h"
 
+// RF-NoC RH Include(s)
+#include <GenericThreadedComponent.h>
+#include <RFNoC_Component.h>
+
+// UHD Include(s)
 #include <uhd/rfnoc/block_ctrl.hpp>
 #include <uhd/rfnoc/graph.hpp>
 #include <uhd/device3.hpp>
 
-#include "GenericThreadedComponent.h"
-#include "RFNoC_Component.h"
-
-// The size of the port hashes
-const CORBA::ULong HASH_SIZE = 1000000;
-
 /*
  * The class for the component
  */
-class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_ComponentInterface
+class RFNoC_TestComponent_i : public RFNoC_TestComponent_base, public RFNoC_RH::RFNoC_Component
 {
     ENABLE_LOGGING
+
+	// Constructor(s) and/or Destructor
     public:
         RFNoC_TestComponent_i(const char *uuid, const char *label);
         ~RFNoC_TestComponent_i();
 
-        void constructor();
+    // Public Method(s)
+    public:
+        void releaseObject() throw (CF::LifeCycle::ReleaseError, CORBA::SystemException);
 
-        // Service functions for RX and TX
-        int rxServiceFunction();
-        int txServiceFunction();
+        void start() throw (CF::Resource::StartError, CORBA::SystemException);
+
+        void stop() throw (CF::Resource::StopError, CORBA::SystemException);
+
+	// Public RFNoC_Component Method(s)
+	public:
+		// Methods to be called by the persona, inherited from RFNoC_Component
+		void setRxStreamer(uhd::rx_streamer::sptr rxStreamer);
+
+		void setTxStreamer(uhd::tx_streamer::sptr txStreamer);
+
+    // Protected Method(s)
+    protected:
+        void constructor();
 
         // Don't use the default serviceFunction for clarity
         int serviceFunction() { return FINISH; }
 
-        // Override start and stop
-        void start() throw (CF::Resource::StartError, CORBA::SystemException);
-        void stop() throw (CF::Resource::StopError, CORBA::SystemException);
+        int rxServiceFunction();
 
-        // Override releaseObject
-        void releaseObject() throw (CF::LifeCycle::ReleaseError, CORBA::SystemException);
+        int txServiceFunction();
 
-        // Methods to be called by the persona, inherited from RFNoC_ComponentInterface
-        void setBlockInfoCallback(blockInfoCallback cb);
-        void setNewIncomingConnectionCallback(connectionCallback cb);
-        void setNewOutgoingConnectionCallback(connectionCallback cb);
-        void setRemovedIncomingConnectionCallback(connectionCallback cb);
-        void setRemovedOutgoingConnectionCallback(connectionCallback cb);
-        void setRxStreamer(bool enable);
-        void setTxStreamer(bool enable);
-        void setUsrp(uhd::device3::sptr usrp);
-
+    // Private Method(s)
     private:
-        // Property change listeners
         void argsChanged(const std::vector<arg_struct> &oldValue, const std::vector<arg_struct> &newValue);
 
-        // Stream listeners
-        void streamChanged(bulkio::InShortPort::StreamType stream);
-
-    private:
         void newConnection(const char *connectionID);
-        void newDisconnection(const char *connectionID);
-        bool retrieveRxStream();
-        bool retrieveTxStream();
-        void startRxStream();
-        void stopRxStream();
 
-        // Internal method for setting the arguments on the block
+        void newDisconnection(const char *connectionID);
+
         bool setArgs(std::vector<arg_struct> &newArgs);
 
+        void startRxStream();
+
+        void stopRxStream();
+
+        void streamChanged(bulkio::InShortPort::StreamType stream);
+
+    // Private Member(s)
     private:
-        blockInfoCallback blockInfoChange;
-        connectionCallback newIncomingConnectionCallback;
-        connectionCallback newOutgoingConnectionCallback;
-        connectionCallback removedIncomingConnectionCallback;
-        connectionCallback removedOutgoingConnectionCallback;
         std::vector<std::complex<short> > output;
         bool receivedSRI;
         uhd::rfnoc::block_ctrl_base::sptr rfnocBlock;
-        uhd::rx_streamer::sptr rxStream;
+        uhd::rx_streamer::sptr rxStreamer;
         bool rxStreamStarted;
-        GenericThreadedComponent *rxThread;
+        boost::shared_ptr<RFNoC_RH::GenericThreadedComponent> rxThread;
         size_t spp;
         BULKIO::StreamSRI sri;
         std::map<std::string, bool> streamMap;
-        uhd::tx_streamer::sptr txStream;
-        GenericThreadedComponent *txThread;
-        uhd::device3::sptr usrp;
+        uhd::tx_streamer::sptr txStreamer;
+        boost::shared_ptr<RFNoC_RH::GenericThreadedComponent> txThread;
 };
 
-#endif // RFNOC_TESTCOMPONENT_I_IMPL_H
+#endif

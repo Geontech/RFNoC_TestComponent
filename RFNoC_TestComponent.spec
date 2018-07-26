@@ -23,6 +23,8 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  redhawk-devel >= 2.0
 Requires:       redhawk >= 2.0
 
+BuildRequires:  RFNoC_RH-devel
+Requires:       RFNoC_RH
 
 # Interface requirements
 BuildRequires:  bulkioInterfaces >= 2.0
@@ -64,7 +66,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,redhawk,redhawk,-)
-%dir %{_prefix}/dom/components/RFNoC_TestComponent
+%dir %{_sdrroot}/dom/components/RFNoC_TestComponent
 %{_prefix}/dom/components/RFNoC_TestComponent/RFNoC_TestComponent.scd.xml
 %{_prefix}/dom/components/RFNoC_TestComponent/RFNoC_TestComponent.prf.xml
 %{_prefix}/dom/components/RFNoC_TestComponent/RFNoC_TestComponent.spd.xml
